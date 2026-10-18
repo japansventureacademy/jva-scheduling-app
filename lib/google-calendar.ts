@@ -91,3 +91,16 @@ export async function ensureCalendarEvent(booking: CalendarBooking) {
   if (!meetUrl) throw new CalendarSyncError("Google Calendar created the event without a Meet link. Check conferencing permissions and retry.");
   return { calendarEventId: event.id || id, meetUrl };
 }
+
+export async function deleteCalendarEvent(calendarEventId: string) {
+  const { accessToken, calendarId } = await calendarAccess();
+  const endpoint = `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events/${encodeURIComponent(calendarEventId)}?sendUpdates=all`;
+  const response = await fetch(endpoint, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+  if (![204, 404, 410].includes(response.status)) {
+    const data = await response.json().catch(() => ({})) as { error?: { message?: string } };
+    throw new CalendarSyncError(data.error?.message || "Unable to delete the Google Calendar event.");
+  }
+}
