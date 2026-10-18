@@ -5,6 +5,7 @@
 .recruitment-timeline{position:relative;padding:clamp(76px,10vw,144px) var(--page-gutter);overflow:hidden;background:#f5f5f7;color:#1d1d1f}
 .recruitment-timeline:before{position:absolute;inset:0;content:"";pointer-events:none;background:radial-gradient(circle at 92% 6%,rgba(226,27,35,.11),transparent 34%)}
 .timeline-heading,.timeline-list,.timeline-cta{position:relative;z-index:1;max-width:1240px;margin-inline:auto}
+.recruitment-timeline.is-motion-ready .timeline-heading,.recruitment-timeline.is-motion-ready .timeline-step,.recruitment-timeline.is-motion-ready .timeline-cta{opacity:0}
 .timeline-heading{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(280px,.8fr);gap:clamp(32px,8vw,120px);align-items:end;margin-bottom:clamp(54px,7vw,88px)}
 .timeline-kicker{margin:0 0 18px;color:#d21921;font-size:12px;font-weight:700;letter-spacing:.08em}
 .timeline-heading h2{max-width:720px;margin:0;font:600 clamp(48px,7vw,92px)/.9 var(--font);letter-spacing:-.07em}

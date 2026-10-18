@@ -7,6 +7,8 @@ const startBtn = document.querySelector('#startBtn');
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 let hasAnimated = false;
 
+timeline?.classList.add('is-motion-ready');
+
 function revealTimeline() {
   if (hasAnimated || !timeline) return;
   hasAnimated = true;
