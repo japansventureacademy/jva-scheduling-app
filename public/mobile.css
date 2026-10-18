@@ -1,6 +1,7 @@
 :root{--ease-out:cubic-bezier(.23,1,.32,1);--ease-in-out:cubic-bezier(.77,0,.175,1)}
 button,.role-card,.staff-card,.dept,.date-btn,.slot{touch-action:manipulation;transition-property:transform,background-color,border-color,color,opacity;transition-duration:160ms;transition-timing-function:var(--ease-out)}
 button:active,.role-card:active,.staff-card:active,.dept:active,.date-btn:active,.slot:active{transform:scale(.97)}
+.primary:disabled{cursor:not-allowed;opacity:.42;transform:none}.result-acknowledgement{border:1px solid #d3cbc4;background:#fff;padding:16px;margin:20px 0;align-items:flex-start}.result-acknowledgement input{flex:0 0 auto;width:18px;height:18px;margin:1px 2px 0 0;accent-color:#ef1717}.result-acknowledgement span{color:#4f4945;font-size:12px;line-height:1.55}.result-acknowledgement b{color:#111;font:700 12px DM Sans}
 @media(max-width:760px){
   body{min-width:320px}
   .topbar{height:64px;padding:0 18px}.jva{font-size:23px}.brand-name{font-size:7px}.secure{max-width:120px;text-align:right;font-size:8px;line-height:1.35;letter-spacing:.1em}.secure span{margin-right:5px}

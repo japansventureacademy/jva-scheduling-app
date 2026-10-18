@@ -20,5 +20,6 @@ export const bookings = sqliteTable("bookings", {
   status: text("status").notNull().default("pending"),
   calendarEventId: text("calendar_event_id"),
   meetUrl: text("meet_url"),
+  timelineAcknowledgedAt: text("timeline_acknowledged_at"),
   createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
 }, (table) => [uniqueIndex("bookings_availability_unique").on(table.availabilityId)]);

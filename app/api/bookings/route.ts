@@ -26,15 +26,15 @@ export async function GET() {
 export async function POST(request: Request) {
   const origin = request.headers.get("origin");
   if (origin && origin !== new URL(request.url).origin) return Response.json({ error: "Cross-site requests are not allowed" }, { status: 403 });
-  const body = await request.json() as { availabilityId?: number; candidateName?: string; candidateEmail?: string; department?: string; preferences?: string[] };
+  const body = await request.json() as { availabilityId?: number; candidateName?: string; candidateEmail?: string; department?: string; preferences?: string[]; timelineAcknowledged?: boolean };
   const id = Number(body.availabilityId);
   const name = body.candidateName?.trim() ?? "";
   const email = body.candidateEmail?.trim().toLowerCase() ?? "";
   const department = body.department?.trim() ?? "";
-  if (!Number.isInteger(id) || !name || !email.includes("@") || !["Partnership", "Marketing", "Lab"].includes(department)) return Response.json({ error: "Invalid booking details" }, { status: 400 });
+  if (!Number.isInteger(id) || !name || !email.includes("@") || !["Partnership", "Marketing", "Lab"].includes(department) || body.timelineAcknowledged !== true) return Response.json({ error: "Please confirm the recruitment timeline before requesting an interview" }, { status: 400 });
   try {
     const results = await env.DB.batch([
-      env.DB.prepare("INSERT INTO bookings (availability_id, candidate_name, candidate_email, department, preferences, status) SELECT id, ?, ?, ?, ?, 'pending' FROM availability WHERE id = ? AND booked = 0").bind(name, email, department, JSON.stringify(body.preferences ?? [department]), id),
+      env.DB.prepare("INSERT INTO bookings (availability_id, candidate_name, candidate_email, department, preferences, status, timeline_acknowledged_at) SELECT id, ?, ?, ?, ?, 'pending', CURRENT_TIMESTAMP FROM availability WHERE id = ? AND booked = 0").bind(name, email, department, JSON.stringify(body.preferences ?? [department]), id),
       env.DB.prepare("UPDATE availability SET booked = 1 WHERE id = ? AND booked = 0").bind(id),
     ]);
     if ((results[0].meta?.changes ?? 0) !== 1) return Response.json({ error: "This slot was just taken. Please choose another." }, { status: 409 });
