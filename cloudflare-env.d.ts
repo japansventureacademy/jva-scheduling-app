@@ -8,9 +8,5 @@ declare namespace Cloudflare {
     JVA_PARTNERSHIP_LEAD_EMAIL?: string;
     JVA_MARKETING_LEAD_EMAIL?: string;
     JVA_LAB_LEAD_EMAIL?: string;
-    GOOGLE_CLIENT_ID?: string;
-    GOOGLE_CLIENT_SECRET?: string;
-    GOOGLE_REFRESH_TOKEN?: string;
-    GOOGLE_CALENDAR_ID?: string;
   }
 }

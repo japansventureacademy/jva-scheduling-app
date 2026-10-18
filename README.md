@@ -2,18 +2,17 @@
 
 A responsive recruitment scheduling experience for Japan Venture Academy. The static prototype includes candidate intake, ranked department preferences, panel matching, timezone-aware slot selection, confirmation, calendar handoff, and rescheduling.
 
-## Google Calendar + Meet connection
+## Google Calendar + Meet production integration
 
-When an interviewer accepts (or the president covers) a request, the backend now creates an idempotent Google Calendar event, requests a unique Google Meet conference, emails all attendees, and stores the Google event ID and Meet URL. If Google fails, the booking is returned to its previous state so it can be retried safely.
+The UI is ready for a server endpoint that:
 
-Use OAuth owned by the recruiting calendar administrator:
+1. Reads free/busy windows for the selected department lead and president.
+2. Rechecks availability at confirmation to prevent double booking.
+3. Creates a Google Calendar event with the candidate and interviewers as attendees.
+4. Requests Google Meet conference data and sends updates to all attendees.
+5. Stores a signed reschedule/cancellation token and sends reminder emails.
 
-1. In Google Cloud, enable the Google Calendar API and create an OAuth 2.0 web client.
-2. Authorize that account for offline access with the `https://www.googleapis.com/auth/calendar.events` scope. The authorization request must use `access_type=offline`; securely retain the returned refresh token.
-3. Add `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, and `GOOGLE_REFRESH_TOKEN` as deployment secrets. Optionally set `GOOGLE_CALENDAR_ID`; it defaults to `primary`.
-4. Never place these values in source code or committed `.env` files. Restart/redeploy after setting them.
-
-The OAuth account must be allowed to create Google Meet conferences and invite external attendees. Until all three required secrets are present, acceptance fails closed and no booking is marked accepted.
+Use a Google Workspace service account with domain-wide delegation, or OAuth owned by the recruiting calendar administrator. Keep credentials server-side only.
 
 ## Security configuration
 
