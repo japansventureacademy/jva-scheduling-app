@@ -14,3 +14,68 @@ button:active,.role-card:active,.staff-card:active,.dept:active,.date-btn:active
 }
 @media(max-width:380px){.secure{display:none}.intro h1{font-size:50px}.trust-row{grid-template-columns:1fr 1fr}.trust-row>span:last-child{grid-column:1/-1}.dashboard-head{display:block}.dash-back{margin-top:14px}.match-card{flex-wrap:wrap}.match-card .live{margin:10px 0 0;width:100%}}
 @media(prefers-reduced-motion:reduce){button,.role-card,.staff-card,.dept,.date-btn,.slot{transition:none!important}}
+
+/* Mobile overrides live last in the stylesheet stack. Keep these selectors
+   specific enough to win over the desktop polish layer loaded after this file. */
+@media(max-width:760px){
+  html,body{max-width:100%;overflow-x:hidden}
+  body{padding-bottom:env(safe-area-inset-bottom)}
+
+  .topbar{padding-top:env(safe-area-inset-top);height:calc(64px + env(safe-area-inset-top))}
+  .intro{min-height:calc(100svh - 64px - env(safe-area-inset-top));padding-bottom:calc(32px + env(safe-area-inset-bottom))}
+  .intro-actions{display:grid;grid-template-columns:1fr;width:100%;gap:10px}
+  .intro-actions button{width:100%;justify-content:center}
+
+  .role-choice{display:block;padding:64px 20px calc(32px + env(safe-area-inset-bottom))}
+  .role-copy{margin-bottom:28px}
+  .role-cards{grid-template-columns:1fr;gap:14px}
+  .role-card{min-height:224px;padding:26px 28px}
+
+  .scheduler{display:block;grid-template-columns:1fr;min-width:0;min-height:calc(100svh - 64px);overflow:visible}
+  .scheduler aside{height:auto;min-height:136px;padding:18px 20px 22px}
+  .scheduler aside>p:not(.aside-label),.scheduler .steps{display:none}
+  .scheduler aside .aside-label{margin-top:14px}
+  .scheduler aside h2{max-width:310px;font-size:28px;line-height:1.02;margin:9px 0 0}
+  .scheduler .panel{width:100%;min-width:0;padding:18px 20px calc(42px + env(safe-area-inset-bottom))}
+  .scheduler .back-link{min-height:44px;margin:-4px 0 8px;padding:0}
+  .scheduler .form-view,.scheduler .success-view{width:100%;max-width:none;margin:14px 0 0}
+  .scheduler .form-head h3,.scheduler .success-view h3{font-size:clamp(34px,10vw,42px);line-height:1.02}
+  .scheduler .grid.two{grid-template-columns:1fr;gap:16px}
+  .scheduler label,.scheduler fieldset{min-width:0}
+  .scheduler input,.scheduler select{width:100%;max-width:100%;font-size:16px}
+  .scheduler .dept-grid{grid-template-columns:1fr;gap:9px}
+  .scheduler .dept{width:100%;min-height:56px;text-align:left}
+  .scheduler .selection{display:block;padding:14px}
+  .scheduler .selection p{margin:6px 0 0;text-align:left;overflow-wrap:anywhere}
+  .scheduler .checkbox{align-items:flex-start;gap:10px;padding-block:4px}
+  .scheduler .checkbox input{flex:0 0 20px;width:20px;height:20px;margin-top:1px}
+  .scheduler .primary.wide{position:sticky;bottom:max(12px,env(safe-area-inset-bottom));z-index:4;width:100%;box-shadow:0 12px 32px rgba(0,0,0,.2)}
+
+  .match-card{display:grid;grid-template-columns:auto minmax(0,1fr);gap:12px}
+  .match-card .live{grid-column:1/-1;width:max-content;margin:0}
+  .date-strip{width:calc(100% + 20px);overflow-x:auto;overscroll-behavior-inline:contain;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+  .date-strip::-webkit-scrollbar{display:none}
+  .slots{grid-template-columns:1fr 1fr;gap:9px}
+  .timezone-row{align-items:center;gap:8px}
+  .summary-card{display:grid;grid-template-columns:auto minmax(0,1fr)}
+  .review div{gap:12px}.review dt{flex:0 0 34%}.review dd{min-width:0}
+
+  .staff-portal{padding-inline:20px}
+  .dashboard-head{display:block}.dashboard-actions{margin-top:18px}
+  .dashboard-actions>*{min-height:46px}
+  .dash-stats{gap:8px;background:transparent}
+  .dash-tabs{width:calc(100% + 20px);overflow-x:auto;scrollbar-width:none}
+  .dash-tabs::-webkit-scrollbar{display:none}
+  .team-calendar-grid{scroll-snap-type:x mandatory;scroll-padding-left:1px;overscroll-behavior-inline:contain}
+  .calendar-day{scroll-snap-align:start}
+
+  footer{padding:22px 20px calc(22px + env(safe-area-inset-bottom));gap:16px;align-items:flex-start}
+}
+
+@media(max-width:380px){
+  .intro{padding-inline:16px}.intro h1.interview-headline{font-size:38px}
+  .role-choice,.scheduler .panel,.staff-portal{padding-inline:16px}
+  .trust-row{gap:6px}.trust-row>span{min-width:0}
+  .slots{grid-template-columns:1fr}
+  .dash-stats{grid-template-columns:1fr}.dash-stats div{display:flex;align-items:baseline;justify-content:space-between}
+}
