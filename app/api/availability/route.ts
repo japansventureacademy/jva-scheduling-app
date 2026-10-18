@@ -10,10 +10,30 @@ async function staffIdentity() {
 }
 
 export async function GET(request: Request) {
-  const department = new URL(request.url).searchParams.get("department") ?? "";
+  const url = new URL(request.url);
+  const department = url.searchParams.get("department") ?? "";
+  if (url.searchParams.get("mine") === "1") {
+    if (!(await isStaffGateOpen())) return privateJson({ error: "Interviewer access code required", code: "staff_gate" }, { status: 401 });
+    const { email, staff } = await staffIdentity();
+    if (!staff) return privateJson({ error: "Authorized interviewer sign-in required" }, { status: 403 });
+    const result = await env.DB.prepare("SELECT id, department, starts_at AS startsAt, ends_at AS endsAt, booked FROM availability WHERE interviewer_email = ? AND starts_at >= '2026-10-18T15:00:00.000Z' AND starts_at < '2026-10-25T15:00:00.000Z' ORDER BY starts_at").bind(email).all();
+    return privateJson({ availability: result.results });
+  }
   if (department && !["Partnership", "Marketing", "Lab"].includes(department)) return privateJson({ error: "Invalid department" }, { status: 400 });
   const result = await env.DB.prepare("SELECT id, department, starts_at AS startsAt, ends_at AS endsAt FROM availability WHERE booked = 0 AND (? = '' OR department = ?) AND starts_at >= '2026-10-18T15:00:00.000Z' AND starts_at < '2026-10-25T15:00:00.000Z' ORDER BY starts_at").bind(department, department).all();
   return privateJson({ availability: result.results });
+}
+
+export async function DELETE(request: Request) {
+  if (!isSameOriginRequest(request)) return privateJson({ error: "Cross-site requests are not allowed" }, { status: 403 });
+  if (!(await isStaffGateOpen())) return privateJson({ error: "Interviewer access code required", code: "staff_gate" }, { status: 401 });
+  const { email, staff } = await staffIdentity();
+  if (!staff) return privateJson({ error: "Authorized interviewer sign-in required" }, { status: 403 });
+  const id = Number(new URL(request.url).searchParams.get("id"));
+  if (!Number.isSafeInteger(id) || id < 1) return privateJson({ error: "A valid availability slot is required" }, { status: 400 });
+  const result = await env.DB.prepare("DELETE FROM availability WHERE id = ? AND interviewer_email = ? AND booked = 0").bind(id, email).run();
+  if (!result.meta.changes) return privateJson({ error: "This slot was not found or already has an interview request" }, { status: 409 });
+  return privateJson({ status: "success", id });
 }
 
 export async function POST(request: Request) {
