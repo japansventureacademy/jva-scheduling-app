@@ -1,7 +1,7 @@
 import { env } from "cloudflare:workers";
 import { headers } from "next/headers";
 
-const COOKIE_NAME = "jva_staff_gate";
+const COOKIE_NAME = "__Host-jva_staff_gate";
 
 const SESSION_LIFETIME_SECONDS = 12 * 60 * 60;
 

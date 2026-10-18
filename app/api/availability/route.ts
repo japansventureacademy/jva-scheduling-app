@@ -1,19 +1,11 @@
 import { env } from "cloudflare:workers";
-import { headers } from "next/headers";
 import { isStaffGateOpen } from "@/lib/staff-gate";
 import { isSameOriginRequest, privateJson, readJson, RequestBodyError } from "@/lib/http-security";
+import { staffEmailFromRequest, staffForEmail } from "@/lib/staff";
 
-const STAFF: Record<string, { department: string; name: string }> = {
-  "kueimaesaka.00@gmail.com": { department: "All", name: "Kuei Maesaka" },
-  "nhinguyenngan1@gmail.com": { department: "Partnership", name: "Nahi Nguyen" },
-  "giatridrajat1503@gmail.com": { department: "Marketing", name: "Giatri Drajat" },
-  "sakurakoesaka@gmail.com": { department: "Lab", name: "Sakurako Esaka" },
-};
-
-async function staffIdentity() {
-  const h = await headers();
-  const email = h.get("oai-authenticated-user-email")?.toLowerCase() ?? "";
-  return { email, staff: STAFF[email] };
+function staffIdentity(request: Request) {
+  const email = staffEmailFromRequest(request);
+  return { email, staff: staffForEmail(email) };
 }
 
 export async function GET(request: Request) {
@@ -26,8 +18,8 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   if (!isSameOriginRequest(request)) return privateJson({ error: "Cross-site requests are not allowed" }, { status: 403 });
   if (!(await isStaffGateOpen())) return privateJson({ error: "Interviewer access code required", code: "staff_gate" }, { status: 401 });
-  const { email, staff } = await staffIdentity();
-  if (!staff) return privateJson({ error: "Authorized interviewer sign-in required" }, { status: 403 });
+  const { email, staff } = staffIdentity(request);
+  if (!staff) return privateJson({ error: "Choose a valid interviewer profile" }, { status: 403 });
   try {
     const body = await readJson<{ slots?: unknown }>(request);
     if (!Array.isArray(body.slots) || body.slots.length > 100) return privateJson({ error: "Provide at most 100 availability slots" }, { status: 400 });

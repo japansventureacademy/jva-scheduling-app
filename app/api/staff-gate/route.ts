@@ -9,6 +9,13 @@ function clientKey(request: Request) {
   return request.headers.get("cf-connecting-ip") ?? request.headers.get("x-forwarded-for")?.split(",", 1)[0].trim() ?? "unknown";
 }
 
+function pruneAttempts(now: number) {
+  if (attempts.size < 1_000) return;
+  for (const [key, attempt] of attempts) {
+    if (attempt.resetAt <= now || attempts.size > 2_000) attempts.delete(key);
+  }
+}
+
 export async function GET() {
   return privateJson({ unlocked: await isStaffGateOpen() });
 }
@@ -17,6 +24,7 @@ export async function POST(request: Request) {
   if (!isSameOriginRequest(request)) return privateJson({ error: "Cross-site requests are not allowed" }, { status: 403 });
   const key = clientKey(request);
   const now = Date.now();
+  pruneAttempts(now);
   const current = attempts.get(key);
   if (current && current.resetAt > now && current.count >= MAX_ATTEMPTS) {
     return privateJson({ error: "Too many attempts. Try again later." }, { status: 429, headers: { "Retry-After": String(Math.ceil((current.resetAt - now) / 1000)) } });

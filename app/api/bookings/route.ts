@@ -1,33 +1,21 @@
 import { env } from "cloudflare:workers";
-import { headers } from "next/headers";
 import { isStaffGateOpen } from "@/lib/staff-gate";
 import { isSameOriginRequest, privateJson, readJson, RequestBodyError } from "@/lib/http-security";
-
-const ALLOWED = new Set(["kueimaesaka.00@gmail.com", "nhinguyenngan1@gmail.com", "giatridrajat1503@gmail.com", "sakurakoesaka@gmail.com"]);
-const PRESIDENT = "kueimaesaka.00@gmail.com";
-const LEAD_DEPARTMENT: Record<string, string> = {
-  "nhinguyenngan1@gmail.com": "Partnership",
-  "giatridrajat1503@gmail.com": "Marketing",
-  "sakurakoesaka@gmail.com": "Lab",
-};
+import { presidentEmail, staffEmailFromRequest, staffForEmail } from "@/lib/staff";
 const DEPARTMENTS = ["Partnership", "Marketing", "Lab"];
 
-async function signedInEmail() {
-  const h = await headers();
-  return h.get("oai-authenticated-user-email")?.toLowerCase() ?? "";
-}
-
-export async function GET() {
+export async function GET(request: Request) {
   if (!(await isStaffGateOpen())) return privateJson({ error: "Interviewer access code required", code: "staff_gate" }, { status: 401 });
-  const email = await signedInEmail();
-  if (!ALLOWED.has(email)) return privateJson({ error: "Authorized interviewer sign-in required" }, { status: 403 });
+  const email = staffEmailFromRequest(request);
+  const staff = staffForEmail(email);
+  if (!staff) return privateJson({ error: "Choose a valid interviewer profile" }, { status: 403 });
 
   // Candidate email is intentionally omitted. Staff only receive records they
   // are responsible for; filtering in the browser would still disclose data.
-  const baseQuery = "SELECT b.id, b.candidate_name AS candidateName, b.department, b.status, b.meet_url AS meetUrl, a.starts_at AS startsAt, a.ends_at AS endsAt, a.interviewer_email AS interviewerEmail FROM bookings b JOIN availability a ON a.id = b.availability_id";
-  const result = email === PRESIDENT
-    ? await env.DB.prepare(`${baseQuery} WHERE a.interviewer_email = ? OR b.status = 'deferred' ORDER BY a.starts_at`).bind(email).all()
-    : await env.DB.prepare(`${baseQuery} WHERE b.department = ? ORDER BY a.starts_at`).bind(LEAD_DEPARTMENT[email]).all();
+  const baseQuery = "SELECT b.id, b.candidate_name AS candidateName, b.department, b.status, b.meet_url AS meetUrl, a.starts_at AS startsAt, a.ends_at AS endsAt, CASE WHEN a.interviewer_email = ? THEN 1 ELSE 0 END AS assignedToRequester FROM bookings b JOIN availability a ON a.id = b.availability_id";
+  const result = staff.department === "All"
+    ? await env.DB.prepare(`${baseQuery} WHERE a.interviewer_email = ? OR b.status = 'deferred' ORDER BY a.starts_at`).bind(email, email).all()
+    : await env.DB.prepare(`${baseQuery} WHERE b.department = ? ORDER BY a.starts_at`).bind(email, staff.department).all();
   return privateJson({ bookings: result.results });
 }
 
@@ -50,7 +38,7 @@ export async function POST(request: Request) {
 
     const results = await env.DB.batch([
       env.DB.prepare("INSERT INTO bookings (availability_id, candidate_name, candidate_email, department, preferences, status, timeline_acknowledged_at) SELECT id, ?, ?, ?, ?, 'pending', CURRENT_TIMESTAMP FROM availability WHERE id = ? AND department = ? AND booked = 0").bind(name, email, department, JSON.stringify(preferences), id, department),
-      env.DB.prepare("UPDATE availability SET booked = 1 WHERE id = ? AND booked = 0").bind(id),
+      env.DB.prepare("UPDATE availability SET booked = 1 WHERE id = ? AND department = ? AND booked = 0").bind(id, department),
     ]);
     if ((results[0].meta?.changes ?? 0) !== 1) return privateJson({ error: "This slot is unavailable. Please choose another." }, { status: 409 });
     const booked = await env.DB.prepare("SELECT b.id, a.starts_at AS startsAt, a.ends_at AS endsAt FROM bookings b JOIN availability a ON a.id = b.availability_id WHERE b.availability_id = ?").bind(id).first();
@@ -65,8 +53,9 @@ export async function POST(request: Request) {
 export async function PATCH(request: Request) {
   if (!isSameOriginRequest(request)) return privateJson({ error: "Cross-site requests are not allowed" }, { status: 403 });
   if (!(await isStaffGateOpen())) return privateJson({ error: "Interviewer access code required", code: "staff_gate" }, { status: 401 });
-  const email = await signedInEmail();
-  if (!ALLOWED.has(email)) return privateJson({ error: "Authorized interviewer sign-in required" }, { status: 403 });
+  const email = staffEmailFromRequest(request);
+  const staff = staffForEmail(email);
+  if (!staff) return privateJson({ error: "Choose a valid interviewer profile" }, { status: 403 });
 
   let body: { bookingId?: unknown; action?: unknown };
   try {
@@ -81,7 +70,7 @@ export async function PATCH(request: Request) {
 
   const booking = await env.DB.prepare("SELECT b.id, b.status, b.department, b.availability_id AS availabilityId FROM bookings b WHERE b.id = ?").bind(bookingId).first<{ id: number; status: string; department: string; availabilityId: number }>();
   if (!booking) return privateJson({ error: "Interview request not found" }, { status: 404 });
-  if (email === PRESIDENT) {
+  if (email === presidentEmail()) {
     if (action !== "cover" || booking.status !== "deferred") return privateJson({ error: "The president can cover deferred requests only" }, { status: 409 });
     await env.DB.batch([
       env.DB.prepare("UPDATE bookings SET status = 'accepted' WHERE id = ? AND status = 'deferred'").bind(bookingId),
@@ -89,7 +78,7 @@ export async function PATCH(request: Request) {
     ]);
     return privateJson({ status: "accepted" });
   }
-  if (LEAD_DEPARTMENT[email] !== booking.department) return privateJson({ error: "Only the relevant department lead can decide this request" }, { status: 403 });
+  if (staff.department !== booking.department) return privateJson({ error: "Only the relevant department lead can decide this request" }, { status: 403 });
   if (booking.status !== "pending") return privateJson({ error: "This request has already been decided" }, { status: 409 });
   const nextStatus = action === "accept" ? "accepted" : action === "defer" ? "deferred" : "denied";
   const result = await env.DB.prepare("UPDATE bookings SET status = ? WHERE id = ? AND status = 'pending'").bind(nextStatus, bookingId).run();
