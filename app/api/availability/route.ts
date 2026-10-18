@@ -24,7 +24,6 @@ export async function POST(request: Request) {
     const body = await readJson<{ slots?: unknown }>(request);
     if (!Array.isArray(body.slots) || body.slots.length > 100) return privateJson({ error: "Provide at most 100 availability slots" }, { status: 400 });
     const slots = body.slots as Array<{ startsAt?: unknown; endsAt?: unknown }>;
-    if (staff.department === "All") return privateJson({ error: "The president is optional and does not publish department availability" }, { status: 400 });
     const windowStart = Date.parse("2026-10-18T15:00:00.000Z");
     const windowEnd = Date.parse("2026-10-25T15:00:00.000Z");
     const valid = slots.filter(slot => {
