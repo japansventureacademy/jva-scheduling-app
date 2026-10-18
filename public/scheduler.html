@@ -15,6 +15,7 @@
   <link rel="stylesheet" href="live-dashboard.css" />
   <link rel="stylesheet" href="mobile.css" />
   <link rel="stylesheet" href="apple-polish.css" />
+  <link rel="stylesheet" href="timeline.css" />
 </head>
 <body>
   <div class="ambient" aria-hidden="true"><span></span><span></span><span></span></div>
@@ -27,8 +28,64 @@
       <div class="eyebrow"><span>2026</span> CORE TEAM RECRUITMENT</div>
       <h1 class="interview-headline">Congratulations,<br><em>you’re moving to the interview round.</em></h1>
       <p>Welcome to the JVA recruitment process. Choose the teams you’re most excited about, then book one conversation with the team lead.</p>
-      <button class="primary" id="startBtn">Get started <span>↗</span></button>
+      <div class="intro-actions">
+        <button class="primary" id="startBtn">Get started <span>↗</span></button>
+        <button class="timeline-trigger" id="timelineTrigger" type="button" aria-controls="recruitmentTimeline">View recruitment process <span>↓</span></button>
+      </div>
       <div class="trust-row"><span><b>45</b> min reserved</span><span><b>30</b> min interview</span><span><b>15</b> min Q&amp;A</span></div>
+    </section>
+
+    <section class="recruitment-timeline" id="recruitmentTimeline" aria-labelledby="timelineHeading">
+      <div class="timeline-heading">
+        <div>
+          <p class="timeline-kicker">THE ROAD AHEAD</p>
+          <h2 id="timelineHeading">Your recruitment<br>journey.</h2>
+        </div>
+        <p>From your completed screening to the final decision, here’s what comes next.</p>
+      </div>
+      <ol class="timeline-list">
+        <li class="timeline-step is-complete">
+          <div class="timeline-marker"><span>✓</span></div>
+          <div class="timeline-card">
+            <span class="timeline-status">Complete</span>
+            <p class="timeline-number">01</p>
+            <h3>Screening</h3>
+            <p>Your application has been reviewed and you’ve successfully moved forward.</p>
+          </div>
+        </li>
+        <li class="timeline-step is-current">
+          <div class="timeline-marker"><span>02</span></div>
+          <div class="timeline-card">
+            <span class="timeline-status">Up next</span>
+            <p class="timeline-number">02</p>
+            <h3>First-round interview</h3>
+            <p>Meet your team lead and talk through your interests, experience, and expectations.</p>
+          </div>
+        </li>
+        <li class="timeline-step">
+          <div class="timeline-marker"><span>03</span></div>
+          <div class="timeline-card">
+            <span class="timeline-status"><time datetime="2026-10-26">Oct 26</time>–<time datetime="2026-11-02">Nov 2</time></span>
+            <p class="timeline-number">03</p>
+            <h3>Trial period</h3>
+            <p>Join online and offline meetings while contributing to active JVA projects.</p>
+            <div class="timeline-event"><span>✦</span><p><b>Team meeting</b><br><time datetime="2026-10-29T19:00:00+09:00">Oct 29 · 19:00–21:00</time></p></div>
+          </div>
+        </li>
+        <li class="timeline-step">
+          <div class="timeline-marker"><span>04</span></div>
+          <div class="timeline-card">
+            <span class="timeline-status">After the trial</span>
+            <p class="timeline-number">04</p>
+            <h3>Final result</h3>
+            <p>We’ll share the final outcome. A quick call may be scheduled if needed.</p>
+          </div>
+        </li>
+      </ol>
+      <div class="timeline-cta">
+        <p><span>Next up</span> Book your first-round interview.</p>
+        <button class="primary" id="timelineStartBtn" type="button">Choose your time <span>↗</span></button>
+      </div>
     </section>
 
     <section class="role-choice hidden" id="roleChoice" aria-labelledby="roleHeading">
@@ -73,7 +130,7 @@
         <div class="staff-note"><span>✦</span><p><b>Protected interviewer access</b><br>The shared access code unlocks this portal. Availability and bookings are shared across devices; Calendar and Meet synchronization is still pending authorization.</p></div>
       </div>
       <div class="staff-dashboard hidden" id="staffDashboard">
-        <div class="dashboard-head"><div><small>INTERVIEWER DASHBOARD · PREVIEW</small><h2 id="dashboardName">Schedule</h2><p id="dashboardRole"></p></div><button class="dash-back" id="switchProfile">Switch profile</button></div>
+        <div class="dashboard-head"><div><small>INTERVIEWER DASHBOARD · PREVIEW</small><h2 id="dashboardName">Schedule</h2><p id="dashboardRole"></p></div><div class="dashboard-actions"><button class="availability-cta" id="manageAvailability">＋ Add available hours</button><button class="dash-back" id="switchProfile">Switch profile</button></div></div>
         <div class="dash-stats"><div><b id="myInterviewCount">0</b><span>My interviews</span></div><div><b id="deptCandidateCount">0</b><span>Department candidates</span></div><div><b id="allCandidateCount">0</b><span>Visible applicants</span></div></div>
         <nav class="dash-tabs" aria-label="Dashboard views"><button class="active" data-view="schedule">My schedule</button><button data-view="availability">Availability</button><button data-view="department">My department</button><button data-view="all">Visible applicants</button></nav>
         <div class="dash-content"><section id="scheduleView"></section><section id="candidateView" class="hidden"></section></div>
@@ -148,5 +205,6 @@
   </main>
   <footer><span>JVA © 2026</span><span>BUILDING THE FUTURE, TOGETHER.</span></footer>
   <script src="app.js"></script>
+  <script type="module" src="timeline.js"></script>
 </body>
 </html>
