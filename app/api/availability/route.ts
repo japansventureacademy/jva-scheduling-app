@@ -1,10 +1,11 @@
 import { env } from "cloudflare:workers";
+import { headers } from "next/headers";
 import { isStaffGateOpen } from "@/lib/staff-gate";
 import { isSameOriginRequest, privateJson, readJson, RequestBodyError } from "@/lib/http-security";
-import { staffEmailFromRequest, staffForEmail } from "@/lib/staff";
+import { staffForEmail } from "@/lib/staff";
 
-function staffIdentity(request: Request) {
-  const email = staffEmailFromRequest(request);
+async function staffIdentity() {
+  const email = (await headers()).get("oai-authenticated-user-email")?.trim().toLowerCase() ?? "";
   return { email, staff: staffForEmail(email) };
 }
 
@@ -18,8 +19,8 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   if (!isSameOriginRequest(request)) return privateJson({ error: "Cross-site requests are not allowed" }, { status: 403 });
   if (!(await isStaffGateOpen())) return privateJson({ error: "Interviewer access code required", code: "staff_gate" }, { status: 401 });
-  const { email, staff } = staffIdentity(request);
-  if (!staff) return privateJson({ error: "Choose a valid interviewer profile" }, { status: 403 });
+  const { email, staff } = await staffIdentity();
+  if (!staff) return privateJson({ error: "Authorized interviewer sign-in required" }, { status: 403 });
   try {
     const body = await readJson<{ slots?: unknown }>(request);
     if (!Array.isArray(body.slots) || body.slots.length > 100) return privateJson({ error: "Provide at most 100 availability slots" }, { status: 400 });
