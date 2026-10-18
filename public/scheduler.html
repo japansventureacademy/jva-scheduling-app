@@ -74,7 +74,7 @@
         <div class="dash-content"><section id="scheduleView"></section><section id="candidateView" class="hidden"></section></div>
         <div class="staff-note dashboard-warning"><span>!</span><p><b>Calendar connection pending</b><br>Candidate records and availability are live. Meet links will appear automatically after Google Calendar is connected.</p></div>
       </div>
-      <dialog id="meetingDialog"><button id="closeMeeting" aria-label="Close">×</button><small>INTERVIEW DETAILS · PREVIEW</small><h3 id="dialogCandidate"></h3><dl><div><dt>TIME</dt><dd id="dialogTime"></dd></div><div><dt>DEPARTMENT</dt><dd id="dialogDept"></dd></div><div><dt>INTERVIEWER</dt><dd id="dialogInterviewer"></dd></div></dl><button class="primary wide" id="previewMeet" disabled>Meet link pending Calendar connection</button></dialog>
+      <dialog id="meetingDialog"><button id="closeMeeting" aria-label="Close">×</button><small>INTERVIEW REQUEST</small><h3 id="dialogCandidate"></h3><dl><div><dt>STATUS</dt><dd id="dialogStatus"></dd></div><div><dt>TIME</dt><dd id="dialogTime"></dd></div><div><dt>DEPARTMENT</dt><dd id="dialogDept"></dd></div><div><dt>INTERVIEWER</dt><dd id="dialogInterviewer"></dd></div></dl><div class="decision-actions" id="decisionActions"></div><p class="decision-message" id="decisionMessage"></p><button class="primary wide" id="previewMeet" disabled>Meet link pending Calendar connection</button></dialog>
     </section>
 
     <section class="scheduler hidden" id="scheduler" aria-live="polite">
@@ -126,14 +126,14 @@
             <div><small>JVA CORE TEAM INTERVIEW</small><h4 id="summaryTime">Thursday, 4:00 PM</h4><p>45 minutes reserved · 30 min interview + 15 min buffer</p></div>
           </div>
           <dl class="review"><div><dt>CANDIDATE</dt><dd id="reviewName"></dd></div><div><dt>EMAIL</dt><dd id="reviewEmail"></dd></div><div><dt>DEPARTMENT</dt><dd id="reviewDept"></dd></div><div><dt>INTERVIEWERS</dt><dd id="reviewPanel"></dd></div></dl>
-          <div class="invite-note preview-warning"><span>!</span><p><b>Your slot will be reserved immediately</b><br>Conflict-safe shared booking is active. Email invitations and Google Meet creation still require the Calendar connection.</p></div>
-          <button class="primary wide" id="confirmBtn">Confirm booking <span>✓</span></button>
+          <div class="invite-note preview-warning"><span>!</span><p><b>Your request will be held for the department lead</b><br>The lead can accept, defer to the president, or deny it. Email invitations and Google Meet creation still require the Calendar connection.</p></div>
+          <button class="primary wide" id="confirmBtn">Request interview <span>✓</span></button>
           <button class="secondary" id="backTimes">← Choose another time</button>
         </section>
 
         <section id="successView" class="success-view hidden">
           <div class="success-mark">✓</div><p class="eyebrow">SLOT RESERVED</p><h3>Your interview<br>is scheduled.</h3><p id="successCopy"></p>
-          <div class="success-card"><span>📅</span><div><b id="successDate"></b><small>Reserved in JVA’s shared schedule · Calendar invitation pending</small></div></div>
+          <div class="success-card"><span>📅</span><div><b id="successDate"></b><small>Request received · awaiting lead confirmation</small></div></div>
           <div class="success-actions"><button class="primary" id="addCalendar">Open Google Calendar <span>↗</span></button><button class="secondary" id="reschedule">Reschedule</button></div>
           <p class="help">Need help? <a href="mailto:japanventureacademy@gmail.com">Contact the JVA team</a></p>
         </section>

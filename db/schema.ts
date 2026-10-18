@@ -17,7 +17,7 @@ export const bookings = sqliteTable("bookings", {
   candidateEmail: text("candidate_email").notNull(),
   department: text("department").notNull(),
   preferences: text("preferences").notNull(),
-  status: text("status").notNull().default("confirmed"),
+  status: text("status").notNull().default("pending"),
   calendarEventId: text("calendar_event_id"),
   meetUrl: text("meet_url"),
   createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
