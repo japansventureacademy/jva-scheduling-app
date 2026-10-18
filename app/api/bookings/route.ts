@@ -1,5 +1,5 @@
 import { env } from "cloudflare:workers";
-import { CalendarSyncError, ensureCalendarEvent } from "@/lib/google-calendar";
+import { CalendarSyncError, deleteCalendarEvent, ensureCalendarEvent } from "@/lib/google-calendar";
 import { isStaffGateOpen } from "@/lib/staff-gate";
 import { isSameOriginRequest, privateJson, readJson, RequestBodyError } from "@/lib/http-security";
 import { presidentEmail, staffEmailFromRequest, staffForEmail } from "@/lib/staff";
@@ -142,4 +142,38 @@ export async function PATCH(request: Request) {
   const result = await env.DB.prepare("UPDATE bookings SET status = ? WHERE id = ? AND status = 'pending'").bind(nextStatus, bookingId).run();
   if ((result.meta?.changes ?? 0) !== 1) return privateJson({ error: "This request has already been decided" }, { status: 409 });
   return privateJson({ status: nextStatus });
+}
+
+export async function DELETE(request: Request) {
+  if (!isSameOriginRequest(request)) return privateJson({ error: "Cross-site requests are not allowed" }, { status: 403 });
+  if (!(await isStaffGateOpen())) return privateJson({ error: "Interviewer access code required", code: "staff_gate" }, { status: 401 });
+  const email = staffEmailFromRequest(request);
+  const staff = staffForEmail(email);
+  if (!staff) return privateJson({ error: "Choose a valid interviewer profile" }, { status: 403 });
+
+  const bookingId = Number(new URL(request.url).searchParams.get("id"));
+  if (!Number.isSafeInteger(bookingId) || bookingId < 1) return privateJson({ error: "Choose a valid interview request" }, { status: 400 });
+  const booking = await env.DB.prepare("SELECT b.id, b.status, b.availability_id AS availabilityId, b.calendar_event_id AS calendarEventId, b.department, a.interviewer_email AS interviewerEmail FROM bookings b JOIN availability a ON a.id = b.availability_id WHERE b.id = ?").bind(bookingId).first<{ id: number; status: string; availabilityId: number; calendarEventId: string | null; department: string; interviewerEmail: string }>();
+  if (!booking) return privateJson({ error: "Interview request not found" }, { status: 404 });
+
+  const canDelete = staff.department === "All"
+    ? booking.interviewerEmail === email || booking.status === "deferred"
+    : booking.department === staff.department;
+  if (!canDelete) return privateJson({ error: "You cannot delete this interview request" }, { status: 403 });
+
+  if (booking.calendarEventId) {
+    try {
+      await deleteCalendarEvent(booking.calendarEventId);
+    } catch (error) {
+      if (error instanceof CalendarSyncError) return privateJson({ error: `${error.message} The request was not deleted; retry after Calendar is available.`, code: "calendar_delete" }, { status: error.status });
+      return privateJson({ error: "Unable to delete the Google Calendar event. The request was not deleted.", code: "calendar_delete" }, { status: 502 });
+    }
+  }
+
+  const results = await env.DB.batch([
+    env.DB.prepare("DELETE FROM bookings WHERE id = ? AND availability_id = ?").bind(booking.id, booking.availabilityId),
+    env.DB.prepare("UPDATE availability SET booked = 0 WHERE id = ? AND NOT EXISTS (SELECT 1 FROM bookings WHERE availability_id = ?)").bind(booking.availabilityId, booking.availabilityId),
+  ]);
+  if ((results[0].meta?.changes ?? 0) !== 1) return privateJson({ error: "Interview request not found" }, { status: 404 });
+  return privateJson({ status: "deleted", releasedAvailabilityId: booking.availabilityId });
 }
