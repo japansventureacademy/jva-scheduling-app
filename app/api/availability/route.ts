@@ -19,7 +19,7 @@ export async function GET(request: Request) {
     return privateJson({ availability: result.results });
   }
   if (department && !["Partnership", "Marketing", "Lab"].includes(department)) return privateJson({ error: "Invalid department" }, { status: 400 });
-  const result = await env.DB.prepare("SELECT a.id, a.department, a.starts_at AS startsAt, a.ends_at AS endsAt FROM availability a WHERE a.booked = 0 AND (? = '' OR a.department = ?) AND a.starts_at >= '2026-10-18T15:00:00.000Z' AND a.starts_at < '2026-10-25T15:00:00.000Z' AND NOT EXISTS (SELECT 1 FROM availability busy WHERE busy.interviewer_email = a.interviewer_email AND busy.booked = 1 AND busy.starts_at < a.ends_at AND busy.ends_at > a.starts_at) ORDER BY a.starts_at").bind(department, department).all();
+  const result = await env.DB.prepare("SELECT a.id, a.department, a.starts_at AS startsAt, a.ends_at AS endsAt, CASE WHEN a.department = 'All' THEN 'President' ELSE 'Department lead' END AS interviewerRole FROM availability a WHERE a.booked = 0 AND (? = '' OR a.department = ? OR a.department = 'All') AND a.starts_at >= '2026-10-18T15:00:00.000Z' AND a.starts_at < '2026-10-25T15:00:00.000Z' AND NOT EXISTS (SELECT 1 FROM availability busy WHERE busy.interviewer_email = a.interviewer_email AND busy.booked = 1 AND busy.starts_at < a.ends_at AND busy.ends_at > a.starts_at) AND (a.department <> 'All' OR ? = '' OR NOT EXISTS (SELECT 1 FROM availability lead WHERE lead.department = ? AND lead.booked = 0 AND lead.starts_at = a.starts_at AND lead.ends_at = a.ends_at)) ORDER BY a.starts_at, CASE WHEN a.department = 'All' THEN 1 ELSE 0 END").bind(department, department, department, department).all();
   return privateJson({ availability: result.results });
 }
 
