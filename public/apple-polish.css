@@ -25,3 +25,4 @@ footer{padding-inline:var(--page-gutter)}
 @media(max-width:760px){.availability-range{grid-template-columns:1fr 1fr 34px}.availability-range label:first-child{grid-column:1/-1}.range-separator{display:none}.remove-range{grid-column:3;grid-row:2}.availability-range label:nth-of-type(2){grid-column:1}.availability-range label:nth-of-type(3){grid-column:2}}
 .intro h1.interview-headline{max-width:1080px;font-size:clamp(50px,7vw,94px);line-height:.96;letter-spacing:-.065em}
 @media(max-width:760px){.intro h1.interview-headline{font-size:clamp(40px,12vw,56px);line-height:1}}
+.availability-range input[type=time]{box-sizing:border-box;width:100%;min-height:42px;padding:0 11px;border:1px solid rgba(0,0,0,.12);border-radius:10px;background:#f5f5f7;color:#1d1d1f;font:500 13px/1 var(--font);color-scheme:light}.availability-range input[type=time]::-webkit-calendar-picker-indicator{cursor:pointer;opacity:.62}

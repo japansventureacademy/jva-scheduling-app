@@ -32,7 +32,7 @@ export async function POST(request: Request) {
       const end = Date.parse(slot.endsAt);
       return Number.isFinite(start) && Number.isFinite(end) && start >= windowStart && start < windowEnd && end - start === 45 * 60_000;
     }) as Array<{ startsAt: string; endsAt: string }>;
-    if (valid.length !== slots.length) return privateJson({ error: "Every slot must be a valid 45-minute interval from October 19–25, 2026" }, { status: 400 });
+    if (valid.length !== slots.length) return privateJson({ error: "One or more times fall outside October 19–25, 2026. Check the date and try again." }, { status: 400 });
     const statements = [env.DB.prepare("DELETE FROM availability WHERE interviewer_email = ? AND booked = 0").bind(email), ...valid.map(slot => env.DB.prepare("INSERT INTO availability (interviewer_email, department, starts_at, ends_at, booked) VALUES (?, ?, ?, ?, 0)").bind(email, staff.department, slot.startsAt, slot.endsAt))];
     await env.DB.batch(statements);
     return privateJson({ status: "success", count: valid.length });
