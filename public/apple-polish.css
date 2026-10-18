@@ -17,3 +17,5 @@ footer{padding-inline:var(--page-gutter)}
 .jva,.brand-name,.intro h1,.primary,.secondary,.back-link,.back-on-dark,.dash-back,.role-copy h2,.staff-shell h2,.role-card strong,.role-card small,.role-card b,.staff-gate h2,.mini-logo,.scheduler aside h2,.form-head>span,.form-head h3,.success-view h3,.dept,.checkbox,.slot,.timezone-row select,.review dt,.dashboard-head h2,.dash-tabs button,.decision-actions button,dialog h3{font-family:var(--font)}
 .brand img{display:block;width:auto;height:42px;object-fit:contain}.mini-logo{position:relative;z-index:1}.mini-logo img{display:block;width:auto;height:52px;object-fit:contain}
 @media(max-width:760px){.brand img{height:34px}.mini-logo img{height:40px}}
+.intro h1.interview-headline{max-width:1080px;font-size:clamp(50px,7vw,94px);line-height:.96;letter-spacing:-.065em}
+@media(max-width:760px){.intro h1.interview-headline{font-size:clamp(40px,12vw,56px);line-height:1}}
