@@ -10,6 +10,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="animations.css" />
 </head>
 <body>
   <div class="ambient" aria-hidden="true"><span></span><span></span><span></span></div>
@@ -62,7 +63,7 @@
 
         <section id="timeView" class="form-view hidden">
           <div class="form-head"><span>02 / 03</span><h3>Choose your time</h3><p>Times shown in <b id="timezoneLabel">your local timezone</b>. Your panel includes the relevant department lead and JVA president.</p></div>
-          <div class="match-card"><div class="avatars"><i>YT</i><i>SA</i></div><div><small>YOUR INTERVIEW PANEL</small><b id="panelNames">Department Lead + President</b></div><span class="live">● LIVE</span></div>
+          <div class="match-card"><div class="avatars"><i id="leadInitials">DL</i><i>KM</i></div><div><small>YOUR INTERVIEW PANEL</small><b id="panelNames">Department Lead + Kuei Maesaka</b></div><span class="live">● LIVE</span></div>
           <div class="date-strip" id="dateStrip"></div>
           <div class="slots" id="slots"></div>
           <div class="timezone-row">🌐 <select id="timezoneSelect" aria-label="Timezone"></select></div>
