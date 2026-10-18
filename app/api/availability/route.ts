@@ -9,10 +9,30 @@ function staffIdentity(request: Request) {
 }
 
 export async function GET(request: Request) {
-  const department = new URL(request.url).searchParams.get("department") ?? "";
+  const url = new URL(request.url);
+  const department = url.searchParams.get("department") ?? "";
+  if (url.searchParams.get("mine") === "1") {
+    if (!(await isStaffGateOpen())) return privateJson({ error: "Interviewer access code required", code: "staff_gate" }, { status: 401 });
+    const { email, staff } = staffIdentity(request);
+    if (!staff) return privateJson({ error: "Choose a valid interviewer profile" }, { status: 403 });
+    const result = await env.DB.prepare("SELECT id, department, starts_at AS startsAt, ends_at AS endsAt, booked FROM availability WHERE interviewer_email = ? AND starts_at >= '2026-10-18T15:00:00.000Z' AND starts_at < '2026-10-25T15:00:00.000Z' ORDER BY starts_at").bind(email).all();
+    return privateJson({ availability: result.results });
+  }
   if (department && !["Partnership", "Marketing", "Lab"].includes(department)) return privateJson({ error: "Invalid department" }, { status: 400 });
   const result = await env.DB.prepare("SELECT a.id, a.department, a.starts_at AS startsAt, a.ends_at AS endsAt FROM availability a WHERE a.booked = 0 AND (? = '' OR a.department = ?) AND a.starts_at >= '2026-10-18T15:00:00.000Z' AND a.starts_at < '2026-10-25T15:00:00.000Z' AND NOT EXISTS (SELECT 1 FROM availability busy WHERE busy.interviewer_email = a.interviewer_email AND busy.booked = 1 AND busy.starts_at < a.ends_at AND busy.ends_at > a.starts_at) ORDER BY a.starts_at").bind(department, department).all();
   return privateJson({ availability: result.results });
+}
+
+export async function DELETE(request: Request) {
+  if (!isSameOriginRequest(request)) return privateJson({ error: "Cross-site requests are not allowed" }, { status: 403 });
+  if (!(await isStaffGateOpen())) return privateJson({ error: "Interviewer access code required", code: "staff_gate" }, { status: 401 });
+  const { email, staff } = staffIdentity(request);
+  if (!staff) return privateJson({ error: "Choose a valid interviewer profile" }, { status: 403 });
+  const id = Number(new URL(request.url).searchParams.get("id"));
+  if (!Number.isSafeInteger(id) || id < 1) return privateJson({ error: "Choose a valid availability slot" }, { status: 400 });
+  const result = await env.DB.prepare("DELETE FROM availability WHERE id = ? AND interviewer_email = ? AND booked = 0").bind(id, email).run();
+  if (!result.meta.changes) return privateJson({ error: "This time is already booked or no longer exists" }, { status: 409 });
+  return privateJson({ status: "success", id });
 }
 
 export async function POST(request: Request) {
