@@ -12,12 +12,13 @@
   <link rel="stylesheet" href="styles.css" />
   <link rel="stylesheet" href="animations.css" />
   <link rel="stylesheet" href="roles.css" />
+  <link rel="stylesheet" href="production-status.css" />
 </head>
 <body>
   <div class="ambient" aria-hidden="true"><span></span><span></span><span></span></div>
   <header class="topbar">
     <a class="brand" href="#" aria-label="JVA home"><span class="dot"></span><span class="jva">JVA</span><span class="brand-name">JAPAN VENTURE<br>ACADEMY</span></a>
-    <div class="secure"><span></span> Secure scheduling</div>
+    <div class="secure"><span></span> Preview · Calendar not connected</div>
   </header>
 
   <main>
@@ -26,7 +27,7 @@
       <h1>Let’s find your<br><em>moment.</em></h1>
       <p>Welcome to the JVA recruitment process. Choose the teams you’re most excited about, then book one conversation with the right people.</p>
       <button class="primary" id="startBtn">Get started <span>↗</span></button>
-      <div class="trust-row"><span><b>15</b> min</span><span><b>1</b> simple booking</span><span><b>∞</b> possibilities</span></div>
+      <div class="trust-row"><span><b>45</b> min reserved</span><span><b>30</b> min interview</span><span><b>15</b> min buffer</span></div>
     </section>
 
     <section class="role-choice hidden" id="roleChoice" aria-labelledby="roleHeading">
@@ -59,7 +60,7 @@
         <h2>Welcome back.</h2>
         <p>Select your profile to manage availability and upcoming interviews.</p>
         <div class="staff-list" id="staffList"></div>
-        <div class="staff-note"><span>✦</span><p><b>Google Calendar connection</b><br>Calendar authorization will be added before live applicant bookings are enabled.</p></div>
+        <div class="staff-note"><span>✦</span><p><b>Preview mode — not synced</b><br>Profiles and availability are not yet connected to Google Calendar. Do not send this scheduler to applicants until calendar authorization is completed.</p></div>
       </div>
     </section>
 
@@ -109,17 +110,17 @@
           <div class="form-head"><span>03 / 03</span><h3>Ready to book?</h3><p>Review the details below. One click will reserve the time for everyone.</p></div>
           <div class="summary-card">
             <div class="calendar-tile"><b id="summaryDay">22</b><span id="summaryMonth">OCT</span></div>
-            <div><small>JVA CORE TEAM INTERVIEW</small><h4 id="summaryTime">Thursday, 4:00 PM</h4><p>15 minutes · Google Meet</p></div>
+            <div><small>JVA CORE TEAM INTERVIEW</small><h4 id="summaryTime">Thursday, 4:00 PM</h4><p>45 minutes reserved · 30 min interview + 15 min buffer</p></div>
           </div>
           <dl class="review"><div><dt>CANDIDATE</dt><dd id="reviewName"></dd></div><div><dt>EMAIL</dt><dd id="reviewEmail"></dd></div><div><dt>DEPARTMENT</dt><dd id="reviewDept"></dd></div><div><dt>INTERVIEWERS</dt><dd id="reviewPanel"></dd></div></dl>
-          <div class="invite-note"><span>✦</span><p><b>Calendar invite included</b><br>You and your interviewers will receive a Google Calendar invitation with an automatic Google Meet link.</p></div>
-          <button class="primary wide" id="confirmBtn">Confirm & book interview <span>✓</span></button>
+          <div class="invite-note preview-warning"><span>!</span><p><b>Preview only — no invite will be sent</b><br>Live Google Calendar availability, conflict checks, email invitations, and Google Meet creation still require connection.</p></div>
+          <button class="primary wide" id="confirmBtn">Save test booking <span>✓</span></button>
           <button class="secondary" id="backTimes">← Choose another time</button>
         </section>
 
         <section id="successView" class="success-view hidden">
-          <div class="success-mark">✓</div><p class="eyebrow">YOU’RE ALL SET</p><h3>Your next chapter<br>starts here.</h3><p id="successCopy"></p>
-          <div class="success-card"><span>📅</span><div><b id="successDate"></b><small>Google Meet link is in your calendar invite</small></div></div>
+          <div class="success-mark">✓</div><p class="eyebrow">PREVIEW SAVED</p><h3>Test booking<br>complete.</h3><p id="successCopy"></p>
+          <div class="success-card"><span>📅</span><div><b id="successDate"></b><small>Saved in this browser only · no invitation was sent</small></div></div>
           <div class="success-actions"><button class="primary" id="addCalendar">Open Google Calendar <span>↗</span></button><button class="secondary" id="reschedule">Reschedule</button></div>
           <p class="help">Need help? <a href="mailto:japanventureacademy@gmail.com">Contact the JVA team</a></p>
         </section>
