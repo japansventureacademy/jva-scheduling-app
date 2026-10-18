@@ -14,10 +14,10 @@ function normalizedEmail(value: string | undefined) {
 export function staffDirectory(): StaffMember[] {
   const configured = env as unknown as Record<string, string | undefined>;
   return [
-    { email: normalizedEmail(configured.JVA_PRESIDENT_EMAIL), department: "All" as const, name: "Kuei Maesaka", role: "President" },
-    { email: normalizedEmail(configured.JVA_PARTNERSHIP_LEAD_EMAIL), department: "Partnership" as const, name: "Nahi Nguyen", role: "Partnership Lead" },
-    { email: normalizedEmail(configured.JVA_MARKETING_LEAD_EMAIL), department: "Marketing" as const, name: "Giatri Drajat", role: "Marketing Lead" },
-    { email: normalizedEmail(configured.JVA_LAB_LEAD_EMAIL), department: "Lab" as const, name: "Sakurako Esaka", role: "Lab Lead" },
+    { email: normalizedEmail(configured.JVA_PRESIDENT_EMAIL ?? "kueimaesaka.00@gmail.com"), department: "All" as const, name: "Kuei Maesaka", role: "President" },
+    { email: normalizedEmail(configured.JVA_PARTNERSHIP_LEAD_EMAIL ?? "nhinguyenngan1@gmail.com"), department: "Partnership" as const, name: "Nahi Nguyen", role: "Partnership Lead" },
+    { email: normalizedEmail(configured.JVA_MARKETING_LEAD_EMAIL ?? "giatridrajat1503@gmail.com"), department: "Marketing" as const, name: "Giatri Drajat", role: "Marketing Lead" },
+    { email: normalizedEmail(configured.JVA_LAB_LEAD_EMAIL ?? "sakurakoesaka@gmail.com"), department: "Lab" as const, name: "Sakurako Esaka", role: "Lab Lead" },
   ].filter(member => member.email);
 }
 
