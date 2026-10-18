@@ -132,7 +132,7 @@
           <div class="team-calendar-head"><div><small>LIVE TEAM CALENDAR</small><h3 id="teamCalendarTitle">Availability & confirmed interviews</h3></div><span id="calendarUpdated">Updating…</span></div>
           <div class="team-calendar-grid" id="teamCalendar"></div>
         </section>
-        <div class="staff-note"><span>✦</span><p><b>Protected interviewer access</b><br>The shared access code unlocks this portal. Availability and bookings are shared across devices; Calendar and Meet synchronization is still pending authorization.</p></div>
+        <div class="staff-note"><span>✦</span><p><b>Protected interviewer access</b><br>The shared access code unlocks this portal. Availability, bookings, Calendar invitations, and Meet links are shared across devices.</p></div>
       </div>
       <dialog id="calendarDialog"><button id="closeCalendarDetail" aria-label="Close">×</button><small id="calendarDetailLabel">AVAILABLE TIME</small><h3 id="calendarDetailTitle"></h3><dl><div><dt>TIME</dt><dd id="calendarDetailTime"></dd></div><div><dt>DEPARTMENT</dt><dd id="calendarDetailDept"></dd></div><div><dt>INTERVIEWER</dt><dd id="calendarDetailInterviewer"></dd></div><div id="calendarCandidateRow"><dt>CANDIDATE</dt><dd id="calendarDetailCandidate"></dd></div></dl><button class="primary wide hidden" id="calendarDetailMeet">Join Google Meet</button></dialog>
     </section>
@@ -143,7 +143,7 @@
         <div class="dash-stats"><div><b id="myInterviewCount">0</b><span>My interviews</span></div><div><b id="deptCandidateCount">0</b><span>Department candidates</span></div><div><b id="allCandidateCount">0</b><span>Visible applicants</span></div></div>
         <nav class="dash-tabs" aria-label="Dashboard views"><button class="active" data-view="schedule">My schedule</button><button data-view="availability">Availability</button><button data-view="department">My department</button><button data-view="all">Visible applicants</button></nav>
         <div class="dash-content"><section id="scheduleView"></section><section id="candidateView" class="hidden"></section></div>
-        <div class="staff-note dashboard-warning"><span>!</span><p><b>Calendar connection pending</b><br>Candidate records and availability are live. Meet links will appear automatically after Google Calendar is connected.</p></div>
+        <div class="staff-note dashboard-warning"><span>✓</span><p><b>Calendar &amp; Meet connected</b><br>Accepted interviews create a Google Calendar invitation and Meet link for the candidate and interviewer.</p></div>
       </div>
       <dialog id="meetingDialog"><button id="closeMeeting" aria-label="Close">×</button><small>INTERVIEW REQUEST</small><h3 id="dialogCandidate"></h3><dl><div><dt>STATUS</dt><dd id="dialogStatus"></dd></div><div><dt>TIME</dt><dd id="dialogTime"></dd></div><div><dt>DEPARTMENT</dt><dd id="dialogDept"></dd></div><div><dt>INTERVIEWER</dt><dd id="dialogInterviewer"></dd></div></dl><div class="decision-actions" id="decisionActions"></div><p class="decision-message" id="decisionMessage"></p><button class="primary wide" id="previewMeet" disabled>Meet link pending Calendar connection</button></dialog>
     </section>
