@@ -1,6 +1,7 @@
 import { env } from "cloudflare:workers";
 import { headers } from "next/headers";
 import { isStaffGateOpen } from "@/lib/staff-gate";
+import { isSameOriginRequest, privateJson, readJson, RequestBodyError } from "@/lib/http-security";
 
 const ALLOWED = new Set(["kueimaesaka.00@gmail.com", "nhinguyenngan1@gmail.com", "giatridrajat1503@gmail.com", "sakurakoesaka@gmail.com"]);
 const PRESIDENT = "kueimaesaka.00@gmail.com";
@@ -9,6 +10,7 @@ const LEAD_DEPARTMENT: Record<string, string> = {
   "giatridrajat1503@gmail.com": "Marketing",
   "sakurakoesaka@gmail.com": "Lab",
 };
+const DEPARTMENTS = ["Partnership", "Marketing", "Lab"];
 
 async function signedInEmail() {
   const h = await headers();
@@ -16,60 +18,81 @@ async function signedInEmail() {
 }
 
 export async function GET() {
-  if (!(await isStaffGateOpen())) return Response.json({ error: "Interviewer access code required", code: "staff_gate" }, { status: 401 });
+  if (!(await isStaffGateOpen())) return privateJson({ error: "Interviewer access code required", code: "staff_gate" }, { status: 401 });
   const email = await signedInEmail();
-  if (!ALLOWED.has(email)) return Response.json({ error: "Authorized interviewer sign-in required" }, { status: 403 });
-  const result = await env.DB.prepare("SELECT b.id, b.candidate_name AS candidateName, b.candidate_email AS candidateEmail, b.department, b.preferences, b.status, b.meet_url AS meetUrl, a.starts_at AS startsAt, a.ends_at AS endsAt, a.interviewer_email AS interviewerEmail FROM bookings b JOIN availability a ON a.id = b.availability_id ORDER BY a.starts_at").all();
-  return Response.json({ bookings: result.results }, { headers: { "Cache-Control": "no-store" } });
+  if (!ALLOWED.has(email)) return privateJson({ error: "Authorized interviewer sign-in required" }, { status: 403 });
+
+  // Candidate email is intentionally omitted. Staff only receive records they
+  // are responsible for; filtering in the browser would still disclose data.
+  const baseQuery = "SELECT b.id, b.candidate_name AS candidateName, b.department, b.status, b.meet_url AS meetUrl, a.starts_at AS startsAt, a.ends_at AS endsAt, a.interviewer_email AS interviewerEmail FROM bookings b JOIN availability a ON a.id = b.availability_id";
+  const result = email === PRESIDENT
+    ? await env.DB.prepare(`${baseQuery} WHERE a.interviewer_email = ? OR b.status = 'deferred' ORDER BY a.starts_at`).bind(email).all()
+    : await env.DB.prepare(`${baseQuery} WHERE b.department = ? ORDER BY a.starts_at`).bind(LEAD_DEPARTMENT[email]).all();
+  return privateJson({ bookings: result.results });
 }
 
 export async function POST(request: Request) {
-  const origin = request.headers.get("origin");
-  if (origin && origin !== new URL(request.url).origin) return Response.json({ error: "Cross-site requests are not allowed" }, { status: 403 });
-  const body = await request.json() as { availabilityId?: number; candidateName?: string; candidateEmail?: string; department?: string; preferences?: string[]; timelineAcknowledged?: boolean };
-  const id = Number(body.availabilityId);
-  const name = body.candidateName?.trim() ?? "";
-  const email = body.candidateEmail?.trim().toLowerCase() ?? "";
-  const department = body.department?.trim() ?? "";
-  if (!Number.isInteger(id) || !name || !email.includes("@") || !["Partnership", "Marketing", "Lab"].includes(department) || body.timelineAcknowledged !== true) return Response.json({ error: "Please confirm the recruitment timeline before requesting an interview" }, { status: 400 });
+  if (!isSameOriginRequest(request)) return privateJson({ error: "Cross-site requests are not allowed" }, { status: 403 });
   try {
+    const body = await readJson<{ availabilityId?: unknown; candidateName?: unknown; candidateEmail?: unknown; department?: unknown; preferences?: unknown; timelineAcknowledged?: unknown }>(request);
+    const id = Number(body.availabilityId);
+    const name = typeof body.candidateName === "string" ? body.candidateName.trim().replace(/\s+/g, " ") : "";
+    const email = typeof body.candidateEmail === "string" ? body.candidateEmail.trim().toLowerCase() : "";
+    const department = typeof body.department === "string" ? body.department.trim() : "";
+    const preferences = Array.isArray(body.preferences) ? body.preferences : [];
+    const validPreferences = preferences.length >= 1 && preferences.length <= 3 && preferences.every(value => typeof value === "string" && DEPARTMENTS.includes(value)) && new Set(preferences).size === preferences.length && preferences[0] === department;
+    const validName = name.length >= 1 && name.length <= 100 && !/[\u0000-\u001f\u007f]/.test(name);
+    const validEmail = email.length <= 254 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
+    if (!Number.isInteger(id) || id <= 0 || !validName || !validEmail || !DEPARTMENTS.includes(department) || !validPreferences || body.timelineAcknowledged !== true) {
+      return privateJson({ error: "Please provide valid details and confirm the recruitment timeline" }, { status: 400 });
+    }
+
     const results = await env.DB.batch([
-      env.DB.prepare("INSERT INTO bookings (availability_id, candidate_name, candidate_email, department, preferences, status, timeline_acknowledged_at) SELECT id, ?, ?, ?, ?, 'pending', CURRENT_TIMESTAMP FROM availability WHERE id = ? AND booked = 0").bind(name, email, department, JSON.stringify(body.preferences ?? [department]), id),
+      env.DB.prepare("INSERT INTO bookings (availability_id, candidate_name, candidate_email, department, preferences, status, timeline_acknowledged_at) SELECT id, ?, ?, ?, ?, 'pending', CURRENT_TIMESTAMP FROM availability WHERE id = ? AND department = ? AND booked = 0").bind(name, email, department, JSON.stringify(preferences), id, department),
       env.DB.prepare("UPDATE availability SET booked = 1 WHERE id = ? AND booked = 0").bind(id),
     ]);
-    if ((results[0].meta?.changes ?? 0) !== 1) return Response.json({ error: "This slot was just taken. Please choose another." }, { status: 409 });
+    if ((results[0].meta?.changes ?? 0) !== 1) return privateJson({ error: "This slot is unavailable. Please choose another." }, { status: 409 });
     const booked = await env.DB.prepare("SELECT b.id, a.starts_at AS startsAt, a.ends_at AS endsAt FROM bookings b JOIN availability a ON a.id = b.availability_id WHERE b.availability_id = ?").bind(id).first();
-    if (!booked) return Response.json({ error: "This slot was just taken. Please choose another." }, { status: 409 });
-    return Response.json({ status: "success", booking: booked }, { status: 201 });
-  } catch {
-    return Response.json({ error: "This slot was just taken. Please choose another." }, { status: 409 });
+    if (!booked) return privateJson({ error: "This slot is unavailable. Please choose another." }, { status: 409 });
+    return privateJson({ status: "success", booking: booked }, { status: 201 });
+  } catch (error) {
+    if (error instanceof RequestBodyError) return privateJson({ error: error.message }, { status: error.status });
+    return privateJson({ error: "Unable to create booking" }, { status: 409 });
   }
 }
 
 export async function PATCH(request: Request) {
-  const origin = request.headers.get("origin");
-  if (origin && origin !== new URL(request.url).origin) return Response.json({ error: "Cross-site requests are not allowed" }, { status: 403 });
-  if (!(await isStaffGateOpen())) return Response.json({ error: "Interviewer access code required", code: "staff_gate" }, { status: 401 });
+  if (!isSameOriginRequest(request)) return privateJson({ error: "Cross-site requests are not allowed" }, { status: 403 });
+  if (!(await isStaffGateOpen())) return privateJson({ error: "Interviewer access code required", code: "staff_gate" }, { status: 401 });
   const email = await signedInEmail();
-  if (!ALLOWED.has(email)) return Response.json({ error: "Authorized interviewer sign-in required" }, { status: 403 });
-  const body = await request.json() as { bookingId?: number; action?: string };
+  if (!ALLOWED.has(email)) return privateJson({ error: "Authorized interviewer sign-in required" }, { status: 403 });
+
+  let body: { bookingId?: unknown; action?: unknown };
+  try {
+    body = await readJson(request, 1024);
+  } catch (error) {
+    if (error instanceof RequestBodyError) return privateJson({ error: error.message }, { status: error.status });
+    return privateJson({ error: "Unable to process request" }, { status: 400 });
+  }
   const bookingId = Number(body.bookingId);
-  const action = body.action ?? "";
-  if (!Number.isInteger(bookingId) || !["accept", "defer", "deny", "cover"].includes(action)) return Response.json({ error: "Invalid decision" }, { status: 400 });
+  const action = typeof body.action === "string" ? body.action : "";
+  if (!Number.isInteger(bookingId) || bookingId <= 0 || !["accept", "defer", "deny", "cover"].includes(action)) return privateJson({ error: "Invalid decision" }, { status: 400 });
+
   const booking = await env.DB.prepare("SELECT b.id, b.status, b.department, b.availability_id AS availabilityId FROM bookings b WHERE b.id = ?").bind(bookingId).first<{ id: number; status: string; department: string; availabilityId: number }>();
-  if (!booking) return Response.json({ error: "Interview request not found" }, { status: 404 });
+  if (!booking) return privateJson({ error: "Interview request not found" }, { status: 404 });
   if (email === PRESIDENT) {
-    if (action !== "cover" || booking.status !== "deferred") return Response.json({ error: "The president can cover deferred requests only" }, { status: 409 });
+    if (action !== "cover" || booking.status !== "deferred") return privateJson({ error: "The president can cover deferred requests only" }, { status: 409 });
     await env.DB.batch([
       env.DB.prepare("UPDATE bookings SET status = 'accepted' WHERE id = ? AND status = 'deferred'").bind(bookingId),
       env.DB.prepare("UPDATE availability SET interviewer_email = ? WHERE id = ?").bind(email, booking.availabilityId),
     ]);
-    return Response.json({ status: "accepted", coveredBy: email });
+    return privateJson({ status: "accepted" });
   }
-  if (LEAD_DEPARTMENT[email] !== booking.department) return Response.json({ error: "Only the relevant department lead can decide this request" }, { status: 403 });
-  if (booking.status !== "pending") return Response.json({ error: "This request has already been decided" }, { status: 409 });
+  if (LEAD_DEPARTMENT[email] !== booking.department) return privateJson({ error: "Only the relevant department lead can decide this request" }, { status: 403 });
+  if (booking.status !== "pending") return privateJson({ error: "This request has already been decided" }, { status: 409 });
   const nextStatus = action === "accept" ? "accepted" : action === "defer" ? "deferred" : "denied";
   const result = await env.DB.prepare("UPDATE bookings SET status = ? WHERE id = ? AND status = 'pending'").bind(nextStatus, bookingId).run();
-  if ((result.meta?.changes ?? 0) !== 1) return Response.json({ error: "This request has already been decided" }, { status: 409 });
-  return Response.json({ status: nextStatus });
+  if ((result.meta?.changes ?? 0) !== 1) return privateJson({ error: "This request has already been decided" }, { status: 409 });
+  return privateJson({ status: nextStatus });
 }

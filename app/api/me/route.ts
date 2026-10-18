@@ -1,5 +1,6 @@
 import { headers } from "next/headers";
 import { isStaffGateOpen } from "@/lib/staff-gate";
+import { privateJson } from "@/lib/http-security";
 
 const STAFF: Record<string, { department: string; name: string; role: string }> = {
   "kueimaesaka.00@gmail.com": { department: "All", name: "Kuei Maesaka", role: "President" },
@@ -9,10 +10,10 @@ const STAFF: Record<string, { department: string; name: string; role: string }> 
 };
 
 export async function GET() {
-  if (!(await isStaffGateOpen())) return Response.json({ error: "Interviewer access code required", code: "staff_gate" }, { status: 401 });
+  if (!(await isStaffGateOpen())) return privateJson({ error: "Interviewer access code required", code: "staff_gate" }, { status: 401 });
   const h = await headers();
   const email = h.get("oai-authenticated-user-email")?.toLowerCase() ?? "";
-  if (!email) return Response.json({ error: "Sign-in required" }, { status: 401 });
-  if (!STAFF[email]) return Response.json({ error: "This email is not authorized for the interviewer portal" }, { status: 403 });
-  return Response.json({ email, ...STAFF[email] }, { headers: { "Cache-Control": "no-store" } });
+  if (!email) return privateJson({ error: "Sign-in required" }, { status: 401 });
+  if (!STAFF[email]) return privateJson({ error: "This email is not authorized for the interviewer portal" }, { status: 403 });
+  return privateJson({ email, ...STAFF[email] });
 }
