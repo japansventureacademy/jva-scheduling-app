@@ -15,12 +15,13 @@
   <link rel="stylesheet" href="production-status.css" />
   <link rel="stylesheet" href="campaign.css" />
   <link rel="stylesheet" href="dashboard.css" />
+  <link rel="stylesheet" href="live-dashboard.css" />
 </head>
 <body>
   <div class="ambient" aria-hidden="true"><span></span><span></span><span></span></div>
   <header class="topbar">
     <a class="brand" href="#" aria-label="JVA home"><span class="dot"></span><span class="jva">JVA</span><span class="brand-name">JAPAN VENTURE<br>ACADEMY</span></a>
-    <div class="secure"><span></span> Preview · Calendar not connected</div>
+    <div class="secure"><span></span> Shared scheduling · Calendar pending</div>
   </header>
 
   <main>
@@ -60,16 +61,18 @@
       <div class="staff-shell">
         <div class="eyebrow"><span>STAFF</span> INTERVIEWER PORTAL</div>
         <h2>Welcome back.</h2>
-        <p>Select your profile to manage availability and upcoming interviews.</p>
+        <p>Sign in with one of the four authorized interviewer emails to manage availability, candidates, and meetings.</p>
         <div class="staff-list" id="staffList"></div>
-        <div class="staff-note"><span>✦</span><p><b>Preview mode — not synced</b><br>Profiles and availability are not yet connected to Google Calendar. Do not send this scheduler to applicants until calendar authorization is completed.</p></div>
+        <button class="primary staff-signin" id="staffSignIn">Continue with authorized email <span>→</span></button>
+        <p class="auth-error hidden" id="authError"></p>
+        <div class="staff-note"><span>✦</span><p><b>Protected interviewer access</b><br>Only the four approved emails can enter. Availability and bookings are shared across devices; Calendar and Meet synchronization is still pending authorization.</p></div>
       </div>
       <div class="staff-dashboard hidden" id="staffDashboard">
         <div class="dashboard-head"><div><small>INTERVIEWER DASHBOARD · PREVIEW</small><h2 id="dashboardName">Schedule</h2><p id="dashboardRole"></p></div><button class="dash-back" id="switchProfile">Switch profile</button></div>
         <div class="dash-stats"><div><b id="myInterviewCount">0</b><span>My interviews</span></div><div><b id="deptCandidateCount">0</b><span>Department candidates</span></div><div><b id="allCandidateCount">0</b><span>All applicants</span></div></div>
-        <nav class="dash-tabs" aria-label="Dashboard views"><button class="active" data-view="schedule">My schedule</button><button data-view="department">My department</button><button data-view="all">All applicants</button></nav>
+        <nav class="dash-tabs" aria-label="Dashboard views"><button class="active" data-view="schedule">My schedule</button><button data-view="availability">Availability</button><button data-view="department">My department</button><button data-view="all">All applicants</button></nav>
         <div class="dash-content"><section id="scheduleView"></section><section id="candidateView" class="hidden"></section></div>
-        <div class="staff-note dashboard-warning"><span>!</span><p><b>Preview records</b><br>These example candidates and meeting details demonstrate the dashboard. Live records and Meet links will replace them after Calendar and shared storage are connected.</p></div>
+        <div class="staff-note dashboard-warning"><span>!</span><p><b>Calendar connection pending</b><br>Candidate records and availability are live. Meet links will appear automatically after Google Calendar is connected.</p></div>
       </div>
       <dialog id="meetingDialog"><button id="closeMeeting" aria-label="Close">×</button><small>INTERVIEW DETAILS · PREVIEW</small><h3 id="dialogCandidate"></h3><dl><div><dt>TIME</dt><dd id="dialogTime"></dd></div><div><dt>DEPARTMENT</dt><dd id="dialogDept"></dd></div><div><dt>INTERVIEWER</dt><dd id="dialogInterviewer"></dd></div></dl><button class="primary wide" id="previewMeet" disabled>Meet link pending Calendar connection</button></dialog>
     </section>
@@ -123,14 +126,14 @@
             <div><small>JVA CORE TEAM INTERVIEW</small><h4 id="summaryTime">Thursday, 4:00 PM</h4><p>45 minutes reserved · 30 min interview + 15 min buffer</p></div>
           </div>
           <dl class="review"><div><dt>CANDIDATE</dt><dd id="reviewName"></dd></div><div><dt>EMAIL</dt><dd id="reviewEmail"></dd></div><div><dt>DEPARTMENT</dt><dd id="reviewDept"></dd></div><div><dt>INTERVIEWERS</dt><dd id="reviewPanel"></dd></div></dl>
-          <div class="invite-note preview-warning"><span>!</span><p><b>Preview only — no invite will be sent</b><br>Live Google Calendar availability, conflict checks, email invitations, and Google Meet creation still require connection.</p></div>
-          <button class="primary wide" id="confirmBtn">Save test booking <span>✓</span></button>
+          <div class="invite-note preview-warning"><span>!</span><p><b>Your slot will be reserved immediately</b><br>Conflict-safe shared booking is active. Email invitations and Google Meet creation still require the Calendar connection.</p></div>
+          <button class="primary wide" id="confirmBtn">Confirm booking <span>✓</span></button>
           <button class="secondary" id="backTimes">← Choose another time</button>
         </section>
 
         <section id="successView" class="success-view hidden">
-          <div class="success-mark">✓</div><p class="eyebrow">PREVIEW SAVED</p><h3>Test booking<br>complete.</h3><p id="successCopy"></p>
-          <div class="success-card"><span>📅</span><div><b id="successDate"></b><small>Saved in this browser only · no invitation was sent</small></div></div>
+          <div class="success-mark">✓</div><p class="eyebrow">SLOT RESERVED</p><h3>Your interview<br>is scheduled.</h3><p id="successCopy"></p>
+          <div class="success-card"><span>📅</span><div><b id="successDate"></b><small>Reserved in JVA’s shared schedule · Calendar invitation pending</small></div></div>
           <div class="success-actions"><button class="primary" id="addCalendar">Open Google Calendar <span>↗</span></button><button class="secondary" id="reschedule">Reschedule</button></div>
           <p class="help">Need help? <a href="mailto:japanventureacademy@gmail.com">Contact the JVA team</a></p>
         </section>

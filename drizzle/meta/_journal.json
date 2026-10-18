@@ -1,0 +1,13 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1792307053426,
+      "tag": "0000_sticky_winter_soldier",
+      "breakpoints": true
+    }
+  ]
+}
