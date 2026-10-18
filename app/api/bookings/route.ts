@@ -1,5 +1,6 @@
 import { env } from "cloudflare:workers";
 import { headers } from "next/headers";
+import { isStaffGateOpen } from "@/lib/staff-gate";
 
 const ALLOWED = new Set(["kueimaesaka.00@gmail.com", "nhinguyenngan1@gmail.com", "giatridrajat1503@gmail.com", "sakurakoesaka@gmail.com"]);
 const PRESIDENT = "kueimaesaka.00@gmail.com";
@@ -15,6 +16,7 @@ async function signedInEmail() {
 }
 
 export async function GET() {
+  if (!(await isStaffGateOpen())) return Response.json({ error: "Interviewer access code required", code: "staff_gate" }, { status: 401 });
   const email = await signedInEmail();
   if (!ALLOWED.has(email)) return Response.json({ error: "Authorized interviewer sign-in required" }, { status: 403 });
   const result = await env.DB.prepare("SELECT b.id, b.candidate_name AS candidateName, b.candidate_email AS candidateEmail, b.department, b.preferences, b.status, b.meet_url AS meetUrl, a.starts_at AS startsAt, a.ends_at AS endsAt, a.interviewer_email AS interviewerEmail FROM bookings b JOIN availability a ON a.id = b.availability_id ORDER BY a.starts_at").all();
@@ -47,6 +49,7 @@ export async function POST(request: Request) {
 export async function PATCH(request: Request) {
   const origin = request.headers.get("origin");
   if (origin && origin !== new URL(request.url).origin) return Response.json({ error: "Cross-site requests are not allowed" }, { status: 403 });
+  if (!(await isStaffGateOpen())) return Response.json({ error: "Interviewer access code required", code: "staff_gate" }, { status: 401 });
   const email = await signedInEmail();
   if (!ALLOWED.has(email)) return Response.json({ error: "Authorized interviewer sign-in required" }, { status: 403 });
   const body = await request.json() as { bookingId?: number; action?: string };

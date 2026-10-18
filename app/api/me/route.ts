@@ -1,4 +1,5 @@
 import { headers } from "next/headers";
+import { isStaffGateOpen } from "@/lib/staff-gate";
 
 const STAFF: Record<string, { department: string; name: string; role: string }> = {
   "kueimaesaka.00@gmail.com": { department: "All", name: "Kuei Maesaka", role: "President" },
@@ -8,6 +9,7 @@ const STAFF: Record<string, { department: string; name: string; role: string }> 
 };
 
 export async function GET() {
+  if (!(await isStaffGateOpen())) return Response.json({ error: "Interviewer access code required", code: "staff_gate" }, { status: 401 });
   const h = await headers();
   const email = h.get("oai-authenticated-user-email")?.toLowerCase() ?? "";
   if (!email) return Response.json({ error: "Sign-in required" }, { status: 401 });

@@ -58,7 +58,16 @@
 
     <section class="staff-portal hidden" id="staffPortal" aria-live="polite">
       <button class="back-on-dark" id="backRoles">← Change role</button>
-      <div class="staff-shell">
+      <form class="staff-gate" id="staffGate">
+        <div class="gate-mark">⌁</div>
+        <div class="eyebrow"><span>SECURE</span> INTERVIEWER ACCESS</div>
+        <h2>Enter access code.</h2>
+        <p>This portal is reserved for JVA’s department leads and president.</p>
+        <label>ACCESS CODE<input id="staffCode" type="password" required autocomplete="current-password" placeholder="Enter code"></label>
+        <button class="primary wide" type="submit">Unlock portal <span>→</span></button>
+        <p class="auth-error hidden" id="gateError"></p>
+      </form>
+      <div class="staff-shell hidden">
         <div class="eyebrow"><span>STAFF</span> INTERVIEWER PORTAL</div>
         <h2>Welcome back.</h2>
         <p>Sign in with one of the four authorized interviewer emails to manage availability, candidates, and meetings.</p>

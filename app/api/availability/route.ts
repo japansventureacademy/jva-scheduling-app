@@ -1,5 +1,6 @@
 import { env } from "cloudflare:workers";
 import { headers } from "next/headers";
+import { isStaffGateOpen } from "@/lib/staff-gate";
 
 const STAFF: Record<string, { department: string; name: string }> = {
   "kueimaesaka.00@gmail.com": { department: "All", name: "Kuei Maesaka" },
@@ -23,6 +24,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   const origin = request.headers.get("origin");
   if (origin && origin !== new URL(request.url).origin) return Response.json({ error: "Cross-site requests are not allowed" }, { status: 403 });
+  if (!(await isStaffGateOpen())) return Response.json({ error: "Interviewer access code required", code: "staff_gate" }, { status: 401 });
   const { email, staff } = await staffIdentity();
   if (!staff) return Response.json({ error: "Authorized interviewer sign-in required" }, { status: 403 });
   const body = await request.json() as { slots?: Array<{ startsAt: string; endsAt: string }> };
