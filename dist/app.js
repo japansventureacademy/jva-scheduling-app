@@ -4,10 +4,17 @@ const president='Kuei Maesaka';
 const state={departments:[],date:0,slot:null,timezone:Intl.DateTimeFormat().resolvedOptions().timeZone||'Asia/Tokyo'};
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const grid=$('#deptGrid');
+const staff=[['Kuei Maesaka','President'],['Nahi Nguyen','Partnership Lead'],['Giatri Drajat','Marketing Lead'],['Sakurako Esaka','Lab Lead']];
 departments.forEach(([name,icon])=>{const b=document.createElement('button');b.type='button';b.className='dept';b.dataset.name=name;b.innerHTML=`<i>${icon}</i><span>${name}</span><span class="rank">+</span>`;b.onclick=()=>toggleDept(name);grid.appendChild(b)});
+staff.forEach(([name,role])=>{const b=document.createElement('button');b.className='staff-card';b.innerHTML=`<span>${name.split(' ').map(n=>n[0]).join('')}</span><div><strong>${name}</strong><small>${role}</small></div><i>→</i>`;b.onclick=()=>{document.querySelectorAll('.staff-card').forEach(x=>x.classList.remove('selected'));b.classList.add('selected');localStorage.setItem('jvaStaffProfile',name)};$('#staffList').appendChild(b)});
 function toggleDept(name){const i=state.departments.indexOf(name);if(i>=0)state.departments.splice(i,1);else if(state.departments.length<3)state.departments.push(name);$$('.dept').forEach(b=>{const n=state.departments.indexOf(b.dataset.name);b.classList.toggle('selected',n>=0);b.querySelector('.rank').textContent=n>=0?n+1:'+'});$('#selection p').textContent=state.departments.length?state.departments.join('  →  '):'No departments selected yet'}
-$('#startBtn').onclick=()=>{$('#intro').classList.add('hidden');$('#scheduler').classList.remove('hidden');scrollTo(0,0)};
-$('#backHome').onclick=()=>{$('#scheduler').classList.add('hidden');$('#intro').classList.remove('hidden')};
+const switchScreen=id=>{['intro','roleChoice','staffPortal','scheduler'].forEach(v=>$('#'+v).classList.toggle('hidden',v!==id));scrollTo(0,0)};
+$('#startBtn').onclick=()=>switchScreen('roleChoice');
+$('#backIntro').onclick=()=>switchScreen('intro');
+$('#applicantRole').onclick=()=>switchScreen('scheduler');
+$('#staffRole').onclick=()=>switchScreen('staffPortal');
+$('#backRoles').onclick=()=>switchScreen('roleChoice');
+$('#backHome').onclick=()=>switchScreen('roleChoice');
 const base=new Date();base.setDate(base.getDate()+2);base.setHours(0,0,0,0);
 const dates=Array.from({length:5},(_,i)=>{const d=new Date(base);d.setDate(d.getDate()+i+(i>2?2:0));return d});
 function renderDates(){const el=$('#dateStrip');el.innerHTML='';dates.forEach((d,i)=>{const b=document.createElement('button');b.className='date-btn '+(i===state.date?'active':'');b.innerHTML=`<small>${d.toLocaleDateString('en',{weekday:'short'}).toUpperCase()}</small><b>${d.getDate()}</b><small>${d.toLocaleDateString('en',{month:'short'}).toUpperCase()}</small>`;b.onclick=()=>{state.date=i;renderDates();renderSlots()};el.appendChild(b)})}

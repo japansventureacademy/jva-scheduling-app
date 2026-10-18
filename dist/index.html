@@ -11,6 +11,7 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css" />
   <link rel="stylesheet" href="animations.css" />
+  <link rel="stylesheet" href="roles.css" />
 </head>
 <body>
   <div class="ambient" aria-hidden="true"><span></span><span></span><span></span></div>
@@ -24,8 +25,42 @@
       <div class="eyebrow"><span>2026</span> CORE TEAM RECRUITMENT</div>
       <h1>Let’s find your<br><em>moment.</em></h1>
       <p>Welcome to the JVA recruitment process. Choose the teams you’re most excited about, then book one conversation with the right people.</p>
-      <button class="primary" id="startBtn">Schedule my interview <span>↗</span></button>
+      <button class="primary" id="startBtn">Get started <span>↗</span></button>
       <div class="trust-row"><span><b>15</b> min</span><span><b>1</b> simple booking</span><span><b>∞</b> possibilities</span></div>
+    </section>
+
+    <section class="role-choice hidden" id="roleChoice" aria-labelledby="roleHeading">
+      <button class="back-on-dark" id="backIntro">← Back</button>
+      <div class="role-copy">
+        <div class="eyebrow"><span>01</span> CHOOSE YOUR PATH</div>
+        <h2 id="roleHeading">How are you<br>joining today?</h2>
+        <p>We’ll take you to the right scheduling experience.</p>
+      </div>
+      <div class="role-cards">
+        <button class="role-card" id="applicantRole">
+          <span class="role-number">01</span><span class="role-icon">↗</span>
+          <strong>I’m an applicant</strong>
+          <small>Share your details, rank your departments, and book your interview.</small>
+          <b>Schedule an interview →</b>
+        </button>
+        <button class="role-card dark-card" id="staffRole">
+          <span class="role-number">02</span><span class="role-icon">⌁</span>
+          <strong>I’m an interviewer</strong>
+          <small>For department leads and the president to manage interview availability.</small>
+          <b>Open interviewer portal →</b>
+        </button>
+      </div>
+    </section>
+
+    <section class="staff-portal hidden" id="staffPortal" aria-live="polite">
+      <button class="back-on-dark" id="backRoles">← Change role</button>
+      <div class="staff-shell">
+        <div class="eyebrow"><span>STAFF</span> INTERVIEWER PORTAL</div>
+        <h2>Welcome back.</h2>
+        <p>Select your profile to manage availability and upcoming interviews.</p>
+        <div class="staff-list" id="staffList"></div>
+        <div class="staff-note"><span>✦</span><p><b>Google Calendar connection</b><br>Calendar authorization will be added before live applicant bookings are enabled.</p></div>
+      </div>
     </section>
 
     <section class="scheduler hidden" id="scheduler" aria-live="polite">
