@@ -30,12 +30,13 @@
       <p>Welcome to the JVA recruitment process. Choose the teams you’re most excited about, then book one conversation with the team lead.</p>
       <div class="intro-actions">
         <button class="primary" id="startBtn">Get started <span>↗</span></button>
-        <button class="timeline-trigger" id="timelineTrigger" type="button" aria-controls="recruitmentTimeline">View recruitment process <span>↓</span></button>
+        <button class="timeline-trigger" id="timelineTrigger" type="button" aria-controls="recruitmentTimeline" aria-haspopup="dialog">View recruitment process <span>↗</span></button>
       </div>
       <div class="trust-row"><span><b>45</b> min reserved</span><span><b>30</b> min interview</span><span><b>15</b> min Q&amp;A</span></div>
     </section>
 
-    <section class="recruitment-timeline" id="recruitmentTimeline" aria-labelledby="timelineHeading">
+    <dialog class="recruitment-timeline" id="recruitmentTimeline" aria-labelledby="timelineHeading">
+      <button class="timeline-close" id="timelineClose" type="button" aria-label="Close recruitment process">×</button>
       <div class="timeline-heading">
         <div>
           <p class="timeline-kicker">THE ROAD AHEAD</p>
@@ -69,7 +70,7 @@
             <p class="timeline-number">03</p>
             <h3>Trial period</h3>
             <p>Join online and offline meetings while contributing to active JVA projects.</p>
-            <div class="timeline-event"><span>✦</span><p><b>Team meeting</b><br><time datetime="2026-10-29T19:00:00+09:00">Oct 29 · 19:00–21:00</time></p></div>
+            <div class="timeline-event"><span>✦</span><p><b>In-person team meeting (Mandatory)</b><br><time datetime="2026-10-29T19:00:00+09:00">Oct 29 · 19:00–21:00</time></p></div>
           </div>
         </li>
         <li class="timeline-step">
@@ -86,7 +87,7 @@
         <p><span>Next up</span> Book your first-round interview.</p>
         <button class="primary" id="timelineStartBtn" type="button">Schedule interview <span>↗</span></button>
       </div>
-    </section>
+    </dialog>
 
     <section class="role-choice hidden" id="roleChoice" aria-labelledby="roleHeading">
       <button class="back-on-dark" id="backIntro">← Back</button>
@@ -213,6 +214,6 @@
   </main>
   <footer><span>JVA © 2026</span><span>BUILDING THE FUTURE, TOGETHER.</span></footer>
   <script src="app.js"></script>
-  <script type="module" src="timeline.js"></script>
+  <script defer src="timeline.js"></script>
 </body>
 </html>

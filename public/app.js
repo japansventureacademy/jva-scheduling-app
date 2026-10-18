@@ -33,7 +33,7 @@ $$('.dash-tabs button').forEach(btn=>btn.onclick=async()=>{const res=await staff
 $('#closeMeeting').onclick=()=>$('#meetingDialog').close();
 $('#closeCalendarDetail').onclick=()=>$('#calendarDialog').close();
 function toggleDept(name){const i=state.departments.indexOf(name);if(i>=0)state.departments.splice(i,1);else if(state.departments.length<3)state.departments.push(name);$$('.dept').forEach(b=>{const n=state.departments.indexOf(b.dataset.name);b.classList.toggle('selected',n>=0);b.querySelector('.rank').textContent=n>=0?n+1:'+'});$('#selection p').textContent=state.departments.length?state.departments.join('  →  '):'No departments selected yet'}
-const switchScreen=id=>{['intro','roleChoice','staffPortal','dashboardScreen','scheduler'].forEach(v=>$('#'+v).classList.toggle('hidden',v!==id));$('#recruitmentTimeline').classList.toggle('hidden',id!=='intro');scrollTo(0,0)};
+const switchScreen=id=>{['intro','roleChoice','staffPortal','dashboardScreen','scheduler'].forEach(v=>$('#'+v).classList.toggle('hidden',v!==id));scrollTo(0,0)};
 $('#startBtn').onclick=()=>switchScreen('roleChoice');
 $('#backIntro').onclick=()=>switchScreen('intro');
 $('#applicantRole').onclick=()=>switchScreen('scheduler');
