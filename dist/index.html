@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#090707" />
+  <title>JVA Interview Scheduler</title>
+  <meta name="description" content="Schedule your Japan Venture Academy recruitment interview." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="ambient" aria-hidden="true"><span></span><span></span><span></span></div>
+  <header class="topbar">
+    <a class="brand" href="#" aria-label="JVA home"><span class="dot"></span><span class="jva">JVA</span><span class="brand-name">JAPAN VENTURE<br>ACADEMY</span></a>
+    <div class="secure"><span></span> Secure scheduling</div>
+  </header>
+
+  <main>
+    <section class="intro" id="intro">
+      <div class="eyebrow"><span>2026</span> CORE TEAM RECRUITMENT</div>
+      <h1>Let’s find your<br><em>moment.</em></h1>
+      <p>Welcome to the JVA recruitment process. Choose the teams you’re most excited about, then book one conversation with the right people.</p>
+      <button class="primary" id="startBtn">Schedule my interview <span>↗</span></button>
+      <div class="trust-row"><span><b>15</b> min</span><span><b>1</b> simple booking</span><span><b>∞</b> possibilities</span></div>
+    </section>
+
+    <section class="scheduler hidden" id="scheduler" aria-live="polite">
+      <aside>
+        <div class="mini-logo"><span class="dot"></span> JVA</div>
+        <p class="aside-label">INTERVIEW BOOKING</p>
+        <h2 id="sideTitle">First, a little<br>about you.</h2>
+        <p id="sideCopy">This helps us match you with the right department lead and interview panel.</p>
+        <ol class="steps">
+          <li class="active"><span>1</span><div><b>Your details</b><small>About you & department choices</small></div></li>
+          <li><span>2</span><div><b>Choose a time</b><small>See live panel availability</small></div></li>
+          <li><span>3</span><div><b>Confirm</b><small>Get your Meet invitation</small></div></li>
+        </ol>
+      </aside>
+
+      <div class="panel">
+        <button class="back-link" id="backHome">← Back</button>
+
+        <form id="detailsForm" class="form-view">
+          <div class="form-head"><span>01 / 03</span><h3>Tell us about yourself</h3><p>Use the email where you’d like to receive your calendar invite.</p></div>
+          <div class="grid two">
+            <label>FIRST NAME<input id="firstName" required autocomplete="given-name" placeholder="Sakura"></label>
+            <label>LAST NAME<input id="lastName" required autocomplete="family-name" placeholder="Tanaka"></label>
+          </div>
+          <label>EMAIL ADDRESS<input id="email" required type="email" autocomplete="email" placeholder="you@example.com"></label>
+          <fieldset>
+            <legend>DEPARTMENT PREFERENCES <small>Choose up to 3, in order</small></legend>
+            <p class="hint">Tap your top choice first. You can reorder your selection.</p>
+            <div class="dept-grid" id="deptGrid"></div>
+          </fieldset>
+          <div class="selection" id="selection"><span>Your ranking</span><p>No departments selected yet</p></div>
+          <label class="checkbox"><input id="consent" type="checkbox" required><span>I agree that JVA may use this information to coordinate my recruitment interview.</span></label>
+          <button class="primary wide" type="submit">See available times <span>→</span></button>
+        </form>
+
+        <section id="timeView" class="form-view hidden">
+          <div class="form-head"><span>02 / 03</span><h3>Choose your time</h3><p>Times shown in <b id="timezoneLabel">your local timezone</b>. Your panel includes the relevant department lead and JVA president.</p></div>
+          <div class="match-card"><div class="avatars"><i>YT</i><i>SA</i></div><div><small>YOUR INTERVIEW PANEL</small><b id="panelNames">Department Lead + President</b></div><span class="live">● LIVE</span></div>
+          <div class="date-strip" id="dateStrip"></div>
+          <div class="slots" id="slots"></div>
+          <div class="timezone-row">🌐 <select id="timezoneSelect" aria-label="Timezone"></select></div>
+          <button class="secondary" id="backDetails">← Edit my details</button>
+        </section>
+
+        <section id="confirmView" class="form-view hidden">
+          <div class="form-head"><span>03 / 03</span><h3>Ready to book?</h3><p>Review the details below. One click will reserve the time for everyone.</p></div>
+          <div class="summary-card">
+            <div class="calendar-tile"><b id="summaryDay">22</b><span id="summaryMonth">OCT</span></div>
+            <div><small>JVA CORE TEAM INTERVIEW</small><h4 id="summaryTime">Thursday, 4:00 PM</h4><p>15 minutes · Google Meet</p></div>
+          </div>
+          <dl class="review"><div><dt>CANDIDATE</dt><dd id="reviewName"></dd></div><div><dt>EMAIL</dt><dd id="reviewEmail"></dd></div><div><dt>DEPARTMENT</dt><dd id="reviewDept"></dd></div><div><dt>INTERVIEWERS</dt><dd id="reviewPanel"></dd></div></dl>
+          <div class="invite-note"><span>✦</span><p><b>Calendar invite included</b><br>You and your interviewers will receive a Google Calendar invitation with an automatic Google Meet link.</p></div>
+          <button class="primary wide" id="confirmBtn">Confirm & book interview <span>✓</span></button>
+          <button class="secondary" id="backTimes">← Choose another time</button>
+        </section>
+
+        <section id="successView" class="success-view hidden">
+          <div class="success-mark">✓</div><p class="eyebrow">YOU’RE ALL SET</p><h3>Your next chapter<br>starts here.</h3><p id="successCopy"></p>
+          <div class="success-card"><span>📅</span><div><b id="successDate"></b><small>Google Meet link is in your calendar invite</small></div></div>
+          <div class="success-actions"><button class="primary" id="addCalendar">Open Google Calendar <span>↗</span></button><button class="secondary" id="reschedule">Reschedule</button></div>
+          <p class="help">Need help? <a href="mailto:japanventureacademy@gmail.com">Contact the JVA team</a></p>
+        </section>
+      </div>
+    </section>
+  </main>
+  <footer><span>JVA © 2026</span><span>BUILDING THE FUTURE, TOGETHER.</span></footer>
+  <script src="app.js"></script>
+</body>
+</html>
