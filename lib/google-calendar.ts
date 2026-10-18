@@ -24,10 +24,10 @@ export class CalendarSyncError extends Error {
 function calendarConfig() {
   const values = env as unknown as Record<string, string | undefined>;
   return {
-    calendarId: values.JVA_GOOGLE_CALENDAR_ID?.trim() || "japansventureacademy@gmail.com",
-    clientId: values.JVA_GOOGLE_CLIENT_ID?.trim() || "",
-    clientSecret: values.JVA_GOOGLE_CLIENT_SECRET?.trim() || "",
-    refreshToken: values.JVA_GOOGLE_REFRESH_TOKEN?.trim() || "",
+    calendarId: values.JVA_GOOGLE_CALENDAR_ID?.trim() || values.GOOGLE_CALENDAR_ID?.trim() || "japansventureacademy@gmail.com",
+    clientId: values.JVA_GOOGLE_CLIENT_ID?.trim() || values.GOOGLE_CLIENT_ID?.trim() || "",
+    clientSecret: values.JVA_GOOGLE_CLIENT_SECRET?.trim() || values.GOOGLE_CLIENT_SECRET?.trim() || "",
+    refreshToken: values.JVA_GOOGLE_REFRESH_TOKEN?.trim() || values.GOOGLE_REFRESH_TOKEN?.trim() || "",
   };
 }
 
