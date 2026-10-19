@@ -70,7 +70,7 @@ export async function PATCH(request: Request) {
   }
   const bookingId = Number(body.bookingId);
   const action = typeof body.action === "string" ? body.action : "";
-  if (!Number.isInteger(bookingId) || bookingId <= 0 || !["accept", "defer", "deny", "cover", "sync"].includes(action)) return privateJson({ error: "Invalid decision" }, { status: 400 });
+  if (!Number.isInteger(bookingId) || bookingId <= 0 || !["accept", "defer", "deny", "cover", "sync", "redo"].includes(action)) return privateJson({ error: "Invalid decision" }, { status: 400 });
 
   const booking = await env.DB.prepare("SELECT b.id, b.status, b.department, b.availability_id AS availabilityId, b.candidate_email AS candidateEmail, b.candidate_name AS candidateName, b.calendar_event_id AS calendarEventId, b.meet_url AS meetUrl, a.starts_at AS startsAt, a.ends_at AS endsAt, a.interviewer_email AS interviewerEmail FROM bookings b JOIN availability a ON a.id = b.availability_id WHERE b.id = ?").bind(bookingId).first<{ id: number; status: string; department: string; availabilityId: number; candidateEmail: string; candidateName: string; calendarEventId: string | null; meetUrl: string | null; startsAt: string; endsAt: string; interviewerEmail: string }>();
   if (!booking) return privateJson({ error: "Interview request not found" }, { status: 404 });
@@ -88,6 +88,15 @@ export async function PATCH(request: Request) {
       startsAt: booking.startsAt,
     });
   };
+  if (action === "redo") {
+    const canRedo = booking.interviewerEmail === email
+      && ["deferred", "denied"].includes(booking.status)
+      && (staff.department === "All" || staff.department === booking.department);
+    if (!canRedo) return privateJson({ error: "Only the assigned interviewer can redo this request" }, { status: 403 });
+    const redone = await env.DB.prepare("UPDATE bookings SET status = 'pending' WHERE id = ? AND status IN ('deferred', 'denied')").bind(bookingId).run();
+    if ((redone.meta?.changes ?? 0) !== 1) return privateJson({ error: "This request has already changed" }, { status: 409 });
+    return privateJson({ status: "pending" });
+  }
   if (action === "sync") {
     if (!["accepted", "syncing"].includes(booking.status)) return privateJson({ error: "Only accepted interviews can be synchronized" }, { status: 409 });
     if (staff.department !== "All" && staff.department !== booking.department) return privateJson({ error: "Only the assigned team can synchronize this interview" }, { status: 403 });
