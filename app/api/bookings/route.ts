@@ -37,14 +37,26 @@ export async function POST(request: Request) {
       return privateJson({ error: "Please provide valid details and confirm the recruitment timeline" }, { status: 400 });
     }
 
+    const existingRequest = await env.DB.prepare("SELECT id, status FROM bookings WHERE candidate_email = ? LIMIT 1").bind(email).first<{ id: number; status: string }>();
+    if (existingRequest) {
+      return privateJson({
+        error: "An interview request already exists for this email address. Only one request is allowed per candidate. Ask the JVA team to redo or delete the existing request before booking again.",
+        code: "duplicate_email",
+      }, { status: 409 });
+    }
+
     const selected = await env.DB.prepare("SELECT interviewer_email AS interviewerEmail, starts_at AS startsAt, ends_at AS endsAt FROM availability WHERE id = ? AND (department = ? OR department = 'All') AND booked = 0").bind(id, department).first<{ interviewerEmail: string; startsAt: string; endsAt: string }>();
     if (!selected) return privateJson({ error: "This slot is unavailable. Please choose another." }, { status: 409 });
     const results = await env.DB.batch([
-      env.DB.prepare("INSERT INTO bookings (availability_id, candidate_name, candidate_email, department, preferences, status, timeline_acknowledged_at) SELECT id, ?, ?, ?, ?, 'pending', CURRENT_TIMESTAMP FROM availability WHERE id = ? AND (department = ? OR department = 'All') AND booked = 0 AND NOT EXISTS (SELECT 1 FROM bookings existing JOIN availability occupied ON occupied.id = existing.availability_id WHERE existing.candidate_email = ? AND existing.status IN ('pending', 'deferred', 'accepted'))").bind(name, email, department, JSON.stringify(preferences), id, department, email),
+      env.DB.prepare("INSERT INTO bookings (availability_id, candidate_name, candidate_email, department, preferences, status, timeline_acknowledged_at) SELECT id, ?, ?, ?, ?, 'pending', CURRENT_TIMESTAMP FROM availability WHERE id = ? AND (department = ? OR department = 'All') AND booked = 0 AND NOT EXISTS (SELECT 1 FROM bookings existing WHERE existing.candidate_email = ?)").bind(name, email, department, JSON.stringify(preferences), id, department, email),
       env.DB.prepare("UPDATE availability SET booked = 1 WHERE id = ? AND (department = ? OR department = 'All') AND booked = 0 AND EXISTS (SELECT 1 FROM bookings WHERE availability_id = ? AND candidate_email = ?)").bind(id, department, id, email),
       env.DB.prepare("DELETE FROM availability WHERE booked = 0 AND id <> ? AND interviewer_email = ? AND starts_at < ? AND ends_at > ? AND EXISTS (SELECT 1 FROM availability chosen WHERE chosen.id = ? AND chosen.booked = 1)").bind(id, selected.interviewerEmail, selected.endsAt, selected.startsAt, id),
     ]);
-    if ((results[0].meta?.changes ?? 0) !== 1) return privateJson({ error: "This slot is unavailable. Please choose another." }, { status: 409 });
+    if ((results[0].meta?.changes ?? 0) !== 1) {
+      const duplicate = await env.DB.prepare("SELECT 1 FROM bookings WHERE candidate_email = ? LIMIT 1").bind(email).first();
+      if (duplicate) return privateJson({ error: "An interview request already exists for this email address. Only one request is allowed per candidate. Ask the JVA team to redo or delete the existing request before booking again.", code: "duplicate_email" }, { status: 409 });
+      return privateJson({ error: "This slot is unavailable. Please choose another." }, { status: 409 });
+    }
     const booked = await env.DB.prepare("SELECT b.id, a.starts_at AS startsAt, a.ends_at AS endsAt FROM bookings b JOIN availability a ON a.id = b.availability_id WHERE b.availability_id = ?").bind(id).first();
     if (!booked) return privateJson({ error: "This slot is unavailable. Please choose another." }, { status: 409 });
     return privateJson({ status: "success", booking: booked }, { status: 201 });
