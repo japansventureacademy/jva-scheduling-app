@@ -30,4 +30,5 @@ footer{padding-inline:var(--page-gutter)}
 @media(max-width:760px){.published-availability li{align-items:flex-start;flex-wrap:wrap}.published-availability li>span{flex:1 0 100%}}
 .decision-actions .delete-request{margin-left:auto;border-color:rgba(226,27,35,.24);background:rgba(226,27,35,.08);color:#b8070d}.decision-actions .delete-request:hover{background:rgba(226,27,35,.15)}
 .slot span,.slot small{display:block}.slot small{margin-top:5px;color:#86868b;font:500 10px/1.1 var(--font)}
+.invite-note em{font-style:normal}
 @media(max-width:760px){.decision-actions .delete-request{width:100%;margin-left:0}}

@@ -14,7 +14,7 @@
   <link rel="stylesheet" href="dashboard.css" />
   <link rel="stylesheet" href="live-dashboard.css" />
   <link rel="stylesheet" href="mobile.css" />
-  <link rel="stylesheet" href="apple-polish.css?v=38" />
+  <link rel="stylesheet" href="apple-polish.css?v=39" />
   <link rel="stylesheet" href="timeline.css" />
 </head>
 <body>
@@ -182,8 +182,8 @@
         </form>
 
         <section id="timeView" class="form-view hidden">
-          <div class="form-head"><span>02 / 03</span><h3>Choose your time</h3><p>Interview window: October 19–25, 2026. Times are shown in <b id="timezoneLabel">your local timezone</b> and are based on your department lead’s availability. The president may join when available.</p></div>
-          <div class="match-card"><div class="avatars"><i id="leadInitials">DL</i><i>KM</i></div><div><small>REQUIRED LEAD · PRESIDENT OPTIONAL</small><b id="panelNames">Department Lead</b></div><span class="live">● PREVIEW</span></div>
+          <div class="form-head"><span>02 / 03</span><h3>Choose your time</h3><p>Interview window: October 19–25, 2026. Times are shown in <b id="timezoneLabel">your local timezone</b> and include availability from your department lead or the president.</p></div>
+          <div class="match-card"><div class="avatars" id="panelAvatars"><i>DL</i></div><div><small id="panelRole">AVAILABLE INTERVIEWER</small><b id="panelNames">Department Lead</b></div><span class="live">● LIVE</span></div>
           <div class="date-strip" id="dateStrip"></div>
           <div class="slots" id="slots"></div>
           <div class="timezone-row">🌐 <select id="timezoneSelect" aria-label="Timezone"></select></div>
@@ -197,7 +197,7 @@
             <div><small>JVA CORE TEAM INTERVIEW</small><h4 id="summaryTime">Thursday, 4:00 PM</h4><p>45 minutes reserved · 30 min interview + 15 min Q&amp;A</p></div>
           </div>
           <dl class="review"><div><dt>CANDIDATE</dt><dd id="reviewName"></dd></div><div><dt>EMAIL</dt><dd id="reviewEmail"></dd></div><div><dt>DEPARTMENT</dt><dd id="reviewDept"></dd></div><div><dt>INTERVIEWERS</dt><dd id="reviewPanel"></dd></div></dl>
-          <div class="invite-note preview-warning"><span>!</span><p><b>Your request will be held for the department lead</b><br>The lead can accept, defer to the president, or deny it. Email invitations and Google Meet creation still require the Calendar connection.</p></div>
+          <div class="invite-note preview-warning"><span>!</span><p><b id="requestOwner">Your request will be held for the department lead</b><br><em id="requestDecision">The lead can accept, defer to the president, or deny it.</em> Email invitations and Google Meet creation still require the Calendar connection.</p></div>
           <label class="checkbox result-acknowledgement"><input id="resultAcknowledgement" type="checkbox"><span><b>I understand the recruitment timeline.</b><br>Results will be announced by Sunday, October 25, and the trial period starts the next day, Monday, October 26.</span></label>
           <button class="primary wide" id="confirmBtn" disabled>Request interview <span>✓</span></button>
           <button class="secondary" id="backTimes">← Choose another time</button>
@@ -205,7 +205,7 @@
 
         <section id="successView" class="success-view hidden">
           <div class="success-mark">✓</div><p class="eyebrow">SLOT RESERVED</p><h3>Your interview<br>is scheduled.</h3><p id="successCopy"></p>
-          <div class="success-card"><span>📅</span><div><b id="successDate"></b><small>Request received · awaiting lead confirmation</small></div></div>
+          <div class="success-card"><span>📅</span><div><b id="successDate"></b><small id="successStatus">Request received · awaiting interviewer confirmation</small></div></div>
           <div class="success-actions"><button class="primary" id="addCalendar">Open Google Calendar <span>↗</span></button><button class="secondary" id="reschedule">Reschedule</button></div>
           <p class="help">Need help? <a href="mailto:japanventureacademy@gmail.com">Contact the JVA team</a></p>
         </section>
@@ -213,7 +213,7 @@
     </section>
   </main>
   <footer><span>JVA © 2026</span><span>BUILDING THE FUTURE, TOGETHER.</span></footer>
-  <script src="app.js?v=38"></script>
+  <script src="app.js?v=39"></script>
   <script defer src="timeline.js"></script>
 </body>
 </html>
