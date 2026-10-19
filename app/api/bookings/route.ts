@@ -37,11 +37,11 @@ export async function POST(request: Request) {
       return privateJson({ error: "Please provide valid details and confirm the recruitment timeline" }, { status: 400 });
     }
 
-    const selected = await env.DB.prepare("SELECT interviewer_email AS interviewerEmail, starts_at AS startsAt, ends_at AS endsAt FROM availability WHERE id = ? AND department = ? AND booked = 0").bind(id, department).first<{ interviewerEmail: string; startsAt: string; endsAt: string }>();
+    const selected = await env.DB.prepare("SELECT interviewer_email AS interviewerEmail, starts_at AS startsAt, ends_at AS endsAt FROM availability WHERE id = ? AND (department = ? OR department = 'All') AND booked = 0").bind(id, department).first<{ interviewerEmail: string; startsAt: string; endsAt: string }>();
     if (!selected) return privateJson({ error: "This slot is unavailable. Please choose another." }, { status: 409 });
     const results = await env.DB.batch([
-      env.DB.prepare("INSERT INTO bookings (availability_id, candidate_name, candidate_email, department, preferences, status, timeline_acknowledged_at) SELECT id, ?, ?, ?, ?, 'pending', CURRENT_TIMESTAMP FROM availability WHERE id = ? AND department = ? AND booked = 0 AND NOT EXISTS (SELECT 1 FROM bookings existing JOIN availability occupied ON occupied.id = existing.availability_id WHERE existing.candidate_email = ? AND existing.status IN ('pending', 'deferred', 'accepted'))").bind(name, email, department, JSON.stringify(preferences), id, department, email),
-      env.DB.prepare("UPDATE availability SET booked = 1 WHERE id = ? AND department = ? AND booked = 0 AND EXISTS (SELECT 1 FROM bookings WHERE availability_id = ? AND candidate_email = ?)").bind(id, department, id, email),
+      env.DB.prepare("INSERT INTO bookings (availability_id, candidate_name, candidate_email, department, preferences, status, timeline_acknowledged_at) SELECT id, ?, ?, ?, ?, 'pending', CURRENT_TIMESTAMP FROM availability WHERE id = ? AND (department = ? OR department = 'All') AND booked = 0 AND NOT EXISTS (SELECT 1 FROM bookings existing JOIN availability occupied ON occupied.id = existing.availability_id WHERE existing.candidate_email = ? AND existing.status IN ('pending', 'deferred', 'accepted'))").bind(name, email, department, JSON.stringify(preferences), id, department, email),
+      env.DB.prepare("UPDATE availability SET booked = 1 WHERE id = ? AND (department = ? OR department = 'All') AND booked = 0 AND EXISTS (SELECT 1 FROM bookings WHERE availability_id = ? AND candidate_email = ?)").bind(id, department, id, email),
       env.DB.prepare("DELETE FROM availability WHERE booked = 0 AND id <> ? AND interviewer_email = ? AND starts_at < ? AND ends_at > ? AND EXISTS (SELECT 1 FROM availability chosen WHERE chosen.id = ? AND chosen.booked = 1)").bind(id, selected.interviewerEmail, selected.endsAt, selected.startsAt, id),
     ]);
     if ((results[0].meta?.changes ?? 0) !== 1) return privateJson({ error: "This slot is unavailable. Please choose another." }, { status: 409 });
@@ -101,6 +101,24 @@ export async function PATCH(request: Request) {
     }
   }
   if (email === presidentEmail()) {
+    if (booking.interviewerEmail === email && booking.status === "pending" && action === "deny") {
+      const denied = await env.DB.prepare("UPDATE bookings SET status = 'denied' WHERE id = ? AND status = 'pending'").bind(bookingId).run();
+      if ((denied.meta?.changes ?? 0) !== 1) return privateJson({ error: "This request has already been decided" }, { status: 409 });
+      return privateJson({ status: "denied" });
+    }
+    if (booking.interviewerEmail === email && booking.status === "pending" && action === "accept") {
+      const claimed = await env.DB.prepare("UPDATE bookings SET status = 'syncing' WHERE id = ? AND status = 'pending'").bind(bookingId).run();
+      if ((claimed.meta?.changes ?? 0) !== 1) return privateJson({ error: "This request has already been decided" }, { status: 409 });
+      try {
+        const calendar = await syncCalendar(email);
+        await env.DB.prepare("UPDATE bookings SET status = 'accepted', calendar_event_id = ?, meet_url = ? WHERE id = ? AND status = 'syncing'").bind(calendar.calendarEventId, calendar.meetUrl, bookingId).run();
+        return privateJson({ status: "accepted", meetUrl: calendar.meetUrl });
+      } catch (error) {
+        await env.DB.prepare("UPDATE bookings SET status = 'pending' WHERE id = ? AND status = 'syncing'").bind(bookingId).run();
+        if (error instanceof CalendarSyncError) return privateJson({ error: error.message, code: "calendar_sync" }, { status: error.status });
+        return privateJson({ error: "Unable to synchronize Google Calendar", code: "calendar_sync" }, { status: 502 });
+      }
+    }
     if (action !== "cover" || booking.status !== "deferred") return privateJson({ error: "The president can cover deferred requests only" }, { status: 409 });
     const conflict = await env.DB.prepare("SELECT 1 FROM availability WHERE interviewer_email = ? AND booked = 1 AND id <> ? AND starts_at < ? AND ends_at > ? LIMIT 1").bind(email, booking.availabilityId, booking.endsAt, booking.startsAt).first();
     if (conflict) return privateJson({ error: "This interview overlaps another interview on the president's schedule" }, { status: 409 });
@@ -122,7 +140,7 @@ export async function PATCH(request: Request) {
       return privateJson({ error: "Unable to synchronize Google Calendar", code: "calendar_sync" }, { status: 502 });
     }
   }
-  if (staff.department !== booking.department) return privateJson({ error: "Only the relevant department lead can decide this request" }, { status: 403 });
+  if (staff.department !== booking.department || booking.interviewerEmail !== email) return privateJson({ error: "Only the assigned department lead can decide this request" }, { status: 403 });
   if (booking.status !== "pending") return privateJson({ error: "This request has already been decided" }, { status: 409 });
   if (action === "accept") {
     const claimed = await env.DB.prepare("UPDATE bookings SET status = 'syncing' WHERE id = ? AND status = 'pending'").bind(bookingId).run();
