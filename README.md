@@ -14,6 +14,8 @@ The UI is ready for a server endpoint that:
 
 Use a Google Workspace service account with domain-wide delegation, or OAuth owned by the recruiting calendar administrator. Keep credentials server-side only.
 
+For dedicated confirmation emails, authorize the same OAuth refresh token with both the Calendar event scope and `https://www.googleapis.com/auth/gmail.send`. If Gmail sending is unavailable, the application falls back to a Calendar event update with `sendUpdates=all` so confirmation delivery remains retryable rather than silently succeeding without an email.
+
 ## Security configuration
 
 Set `JVA_PORTAL_PASSWORD` as a deployment secret; never place it in source code or a committed environment file. Set a separate, randomly generated `JVA_SESSION_SECRET` (at least 32 random bytes) so staff session cookies are signed independently of the access code. Rotating either secret invalidates active staff sessions.
